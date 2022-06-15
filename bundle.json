@@ -21,7 +21,7 @@
         "ram": ">2MB",
         "deps": {
             "components": [
-            "aafwk_lite",
+            "ability_lite",
             "hilog",
             "utils_base",
             "permission",
