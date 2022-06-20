@@ -24,13 +24,13 @@
 ## 目录<a name="section1464106163817"></a>
 
 ```
-/foundation/appexecfwk/appexecfwk_lite
+/foundation/bundlemanager/bundle_framework_lite
      ├── frameworks
      │      └── bundle_lite                # 管理BundleKit与包管理服务通信的客户端代码
      ├── interfaces
      │      ├── kits
      │      │     └── bundle_lite         # BundleKit为开发者提供的接口
-     │      └── innerkits
+     │      └── inner_api
      │             └── bundlemgr_lite      # BundleKit实现的核心代码，及包管理服务为其它子系统提供的接口
      ├── services
      │      └── bundlemgr_lite             # 包管理服务的实现代码
@@ -51,7 +51,7 @@
 
 [用户程序框架子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E7%94%A8%E6%88%B7%E7%A8%8B%E5%BA%8F%E6%A1%86%E6%9E%B6%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
 
-[aafwk\_aafwk\_lite](https://gitee.com/openharmony/aafwk_aafwk_lite/blob/master/README_zh.md)
+[ability\_ability\_lite](https://gitee.com/openharmony/ability_ability_lite/blob/master/README_zh.md)
 
-**appexecfwk\_appexecfwk\_lite**
+**bundlemanager\_bundle\_framework\_lite**
 

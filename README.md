@@ -24,13 +24,13 @@ The bundle management framework is provided by OpenHarmony for you to manage app
 ## Directory Structure<a name="section1464106163817"></a>
 
 ```
-/foundation/appexecfwk/appexecfwk_lite
+/foundation/bundlemanager/bundle_framework_lite
      ├── frameworks
      │      └── bundle_lite                # Client code used for communication between the BundleKit and Bundle Manager Service
      ├── interfaces
      │      ├── kits
      │      │     └── bundle_lite         # BundleKit APIs exposed externally
-     │      └── innerkits
+     │      └── inner_api
      │             └── bundlemgr_lite      # Core implementation code of BundleKit and internal APIs provided by the Bundle Manager Service for other subsystems
      ├── services
      │      └── bundlemgr_lite             # Implementation code of the Bundle Manager Service
@@ -51,7 +51,7 @@ The bundle management framework is provided by OpenHarmony for you to manage app
 
 [Application framework](https://gitee.com/openharmony/docs/blob/master/en/readme/application-framework.md)
 
-[aafwk\_aafwk\_lite](https://gitee.com/openharmony/aafwk_aafwk_lite/blob/master/README.md)
+[ability\_ability\_lite](https://gitee.com/openharmony/ability_ability_lite/blob/master/README.md)
 
-**appexecfwk\_appexecfwk\_lite**
+**bundlemanager\_bundle\_framework\_lite**
 
