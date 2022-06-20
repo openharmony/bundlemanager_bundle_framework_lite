@@ -1,19 +1,19 @@
 {
-    "name": "@ohos/appexecfwk_lite",
+    "name": "@ohos/bundle_framework_lite",
     "description": "Bundle installation management frameworks",
     "homePage": "https://gitee.com/openharmony",
     "version": "3.1",
     "license": "Apache License 2.0",
-    "repository": "https://gitee.com/openharmony/appexecfwk_appexecfwk_lite",
+    "repository": "https://gitee.com/openharmony/bundlemanager_bundle_framework_lite",
     "publishAs": "code-segment",
     "segment": {
-        "destPath": "foundation/appexecfwk/appexecfwk_lite"
+        "destPath": "foundation/bundlemanager/bundle_framework_lite"
     },
     "dirs": {},
     "scripts": {},
     "component": {
-        "name": "appexecfwk_lite",
-        "subsystem": "appexecfwk",
+        "name": "bundle_framework_lite",
+        "subsystem": "bundlemanager",
         "adapted_system_type": [
             "mini"
         ],
@@ -38,24 +38,24 @@
         },
         "build": {
             "sub_component": [
-                "//foundation/appexecfwk/appexecfwk_lite/services/bundlemgr_lite:appexecfwk_services_lite",
-                "//foundation/appexecfwk/appexecfwk_lite/frameworks/bundle_lite:appexecfwk_kits_lite"
+                "//foundation/bundlemanager/bundle_framework_lite/services/bundlemgr_lite:appexecfwk_services_lite",
+                "//foundation/bundlemanager/bundle_framework_lite/frameworks/bundle_lite:appexecfwk_kits_lite"
             ],
             "inner_kits": [
                 {
                     "header": {
-                        "header_base": "foundation/appexecfwk/appexecfwk_lite/interfaces/inner_api/bundlemgr_lite",
+                        "header_base": "foundation/bundlemanager/bundle_framework_lite/interfaces/inner_api/bundlemgr_lite",
                         "header_files": [
                             "bundle_daemon_interface.h",
                             "bundle_inner_interface.h",
                             "bundle_service_interface.h"
                         ]
                     },
-                    "name": "//foundation/appexecfwk/appexecfwk_lite/services/bundlemgr_lite:appexecfwk_services_lite"
+                    "name": "//foundation/bundlemanager/bundle_framework_lite/services/bundlemgr_lite:appexecfwk_services_lite"
                 },
                 {
                     "header": {
-                      "header_base": "foundation/appexecfwk/appexecfwk_lite/interfaces/kits/bundle_lite",
+                      "header_base": "foundation/bundlemanager/bundle_framework_lite/interfaces/kits/bundle_lite",
                       "header_files": [
                         "ability_info.h",
                         "appexecfwk_errors.h",
@@ -64,7 +64,7 @@
                         "module_info.h"
                       ]
                     },
-                    "name": "//foundation/appexecfwk/appexecfwk_lite/frameworks/bundle_lite:appexecfwk_kits_lite"
+                    "name": "//foundation/bundlemanager/bundle_framework_lite/frameworks/bundle_lite:appexecfwk_kits_lite"
                 }
             ]
         }
