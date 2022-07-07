@@ -25,7 +25,6 @@
             "hilog",
             "utils_base",
             "permission",
-            "ipc_lite",
             "samgr_lite",
             "resource_management_lite",
             "appverify"
