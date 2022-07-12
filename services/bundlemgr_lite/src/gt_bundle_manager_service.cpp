@@ -31,7 +31,6 @@
 #include "gt_bundle_parser.h"
 #include "gt_extractor_util.h"
 #include "jerryscript_adapter.h"
-#include "los_tick.h"
 #include "sys/stat.h"
 #include "unistd.h"
 #include "utils.h"
@@ -41,9 +40,12 @@ using namespace OHOS::ACELite;
 
 namespace OHOS {
 const uint8_t OPERATION_DOING = 200;
-const uint8_t BMS_INSTALLATION_START = 101;
 const uint8_t BMS_UNINSTALLATION_START = 104;
 const uint8_t BMS_INSTALLATION_COMPLETED = 100;
+
+#ifndef __LITEOS_M__
+const uint8_t BMS_INSTALLATION_START = 101;
+#endif
 
 GtManagerService::GtManagerService()
 {
@@ -1055,7 +1057,7 @@ void GtManagerService::APP_InsertAppInfo(char *filePath, AppInfoList *list)
     return;
 }
 
-void GtManagerService::APP_FreeAllAppInfo(const AppInfoList *list)
+void GtManagerService::APP_FreeAllAppInfo(AppInfoList *list)
 {
     if (list == nullptr) {
         return;

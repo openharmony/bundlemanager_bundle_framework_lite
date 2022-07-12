@@ -49,7 +49,6 @@ SYSEX_SERVICE_INIT(Init);
 
 const char *BundleMgrService::GetServiceName(Service *service)
 {
-    (void)service;
     return BMS_SERVICE;
 }
 

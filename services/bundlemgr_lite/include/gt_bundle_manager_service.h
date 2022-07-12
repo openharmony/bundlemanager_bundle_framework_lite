@@ -105,7 +105,7 @@ private:
     AppInfoList *APP_InitAllAppInfo(void);
     void APP_QueryAppInfo(const char *appDir, AppInfoList *list);
     void APP_InsertAppInfo(char *filePath, AppInfoList *list);
-    void APP_FreeAllAppInfo(const AppInfoList *list);
+    void APP_FreeAllAppInfo(AppInfoList *list);
     void InstallPreBundle(List<ToBeInstalledApp *> systemPathList, InstallerCallback installerCallback);
 
     GtBundleInstaller *installer_;
