@@ -115,12 +115,14 @@ lite_library("bundle") {
     defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
   }
 
-  cflags = [
-    "-fPIC",
-    "-Wall",
-    "-Wno-format",
-  ]
-  cflags_cc = cflags
+  if (board_toolchain_type != "iccarm") {
+    cflags = [
+      "-fPIC",
+      "-Wall",
+      "-Wno-format",
+    ]
+    cflags_cc = cflags
+  }
 }
 
 ndk_lib("bundle_notes") {

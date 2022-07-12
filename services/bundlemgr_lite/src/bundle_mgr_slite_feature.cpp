@@ -67,7 +67,6 @@ BundleMgrSliteFeature::BundleMgrSliteFeature() : Feature(), identity_()
 
 const char *BundleMgrSliteFeature::GetFeatureName(Feature *feature)
 {
-    (void) feature;
     return BMS_SLITE_FEATURE;
 }
 
@@ -84,8 +83,6 @@ void BundleMgrSliteFeature::OnFeatureInitialize(Feature *feature, Service *paren
 
 void BundleMgrSliteFeature::OnFeatureStop(Feature *feature, Identity identity)
 {
-    (void) feature;
-    (void) identity;
 }
 
 BOOL BundleMgrSliteFeature::OnFeatureMessage(Feature *feature, Request *request)
