@@ -34,7 +34,7 @@ if (ohos_kernel_type == "liteos_m") {
       "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
       "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_static",
       "//foundation/arkui/ace_engine_lite/frameworks:ace_lite",
-      "//foundation/distributedschedule/samgr_lite/samgr:samgr",
+      "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
     ]
 
     include_dirs = [
@@ -53,8 +53,8 @@ if (ohos_kernel_type == "liteos_m") {
       "${aafwk_lite_path}/interfaces/kits/want_lite",
       "${aafwk_lite_path}/frameworks/want_lite/include",
       "//base/global/resource_management_lite/interfaces/inner_api/include",
-      "//foundation/distributedschedule/samgr_lite/interfaces/kits/registry",
-      "//foundation/distributedschedule/samgr_lite/interfaces/kits/samgr",
+      "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
+      "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
       "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
       "//third_party/jerryscript/jerry-core/api",
       "//third_party/jerryscript/jerry-core/include",
@@ -113,8 +113,8 @@ if (ohos_kernel_type == "liteos_m") {
       "${appexecfwk_lite_path}/frameworks/bundle_lite/include",
       "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
       "${appexecfwk_lite_path}/utils/bundle_lite",
-      "//foundation/distributedschedule/samgr_lite/interfaces/kits/registry",
-      "//foundation/distributedschedule/samgr_lite/interfaces/kits/samgr",
+      "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
+      "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
       "//third_party/cJSON",
       "//third_party/zlib",
       "//third_party/zlib/contrib/minizip",
@@ -134,7 +134,7 @@ if (ohos_kernel_type == "liteos_m") {
       "//base/security/appverify/interfaces/innerkits/appverify_lite:verify",
       "//build/lite/config/component/cJSON:cjson_shared",
       "//build/lite/config/component/zlib:zlib_shared",
-      "//foundation/distributedschedule/samgr_lite/samgr:samgr",
+      "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
     ]
   }
   lite_component("appexecfwk_services_lite") {
