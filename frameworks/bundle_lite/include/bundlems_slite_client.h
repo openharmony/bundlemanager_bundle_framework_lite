@@ -16,7 +16,6 @@
 #ifndef OHOS_BUNDLEMS_SLITE_CLIENT_H
 #define OHOS_BUNDLEMS_SLITE_CLIENT_H
 
-#include "iproxy_client.h"
 #include "nocopyable.h"
 #include "want.h"
 #include "bundle_install_msg.h"
