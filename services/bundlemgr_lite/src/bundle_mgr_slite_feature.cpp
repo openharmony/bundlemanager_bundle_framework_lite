@@ -15,7 +15,6 @@
 
 #include "bundle_mgr_slite_feature.h"
 
-#include "bundle_service_interface.h"
 #include "bundlems_log.h"
 #include "ohos_init.h"
 #include "samgr_lite.h"

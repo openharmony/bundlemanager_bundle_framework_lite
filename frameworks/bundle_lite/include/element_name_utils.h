@@ -16,7 +16,9 @@
 #ifndef OHOS_ELEMENT_NAME_UTILS_H
 #define OHOS_ELEMENT_NAME_UTILS_H
 
+#ifndef __LITEOS_M__
 #include <serializer.h>
+#endif
 #include "element_name.h"
 
 #ifdef __cplusplus
@@ -25,10 +27,12 @@ extern "C" {
 #endif
 #endif // __cplusplus
 
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 
 bool SerializeElement(IpcIo *io, const ElementName *element);
 bool DeserializeElement(ElementName *element, IpcIo *io);
+#endif
 #endif
 
 #ifdef __cplusplus

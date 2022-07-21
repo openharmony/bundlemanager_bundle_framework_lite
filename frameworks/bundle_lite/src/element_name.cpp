@@ -19,6 +19,7 @@
 
 #include "utils.h"
 
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 namespace {
     constexpr int VALUE_NULL = 0;
@@ -27,6 +28,7 @@ namespace {
     constexpr int MAX_ABILITY_NAME = 127;
     constexpr int MAX_DEVICE_ID = 1024;
 }
+#endif
 #endif
 
 void ClearElement(ElementName *element)
@@ -73,6 +75,7 @@ bool SetElementAbilityName(ElementName *element, const char *abilityName)
     return element->abilityName != nullptr;
 }
 
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 bool SerializeElement(IpcIo *io, const ElementName *element)
 {
@@ -133,4 +136,5 @@ bool DeserializeElement(ElementName *element, IpcIo *io)
     }
     return true;
 }
+#endif
 #endif
