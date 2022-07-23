@@ -42,8 +42,10 @@
 #ifndef OHOS_ELEMENT_NAME_H
 #define OHOS_ELEMENT_NAME_H
 
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 #include <serializer.h>
+#endif
 #endif
 #include <stdbool.h>
 
@@ -110,9 +112,11 @@ bool SetElementBundleName(ElementName *element, const char *bundleName);
  */
 bool SetElementAbilityName(ElementName *element, const char *abilityName);
 
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 bool SerializeElement(IpcIo *io, const ElementName *element);
 bool DeserializeElement(ElementName *element, IpcIo *io);
+#endif
 #endif
 #ifdef __cplusplus
 #if __cplusplus

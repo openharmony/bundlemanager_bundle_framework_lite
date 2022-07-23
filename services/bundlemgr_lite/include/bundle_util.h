@@ -20,9 +20,11 @@
 #include "bundle_info.h"
 #include "utils_list.h"
 #include "stdint.h"
+#ifndef __LITEOS_M__
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 #include <string>
 #include <vector>
+#endif
 #endif
 #include "cJSON.h"
 
