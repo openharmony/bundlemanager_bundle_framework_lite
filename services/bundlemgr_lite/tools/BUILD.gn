@@ -38,7 +38,7 @@ executable("bm") {
   deps = [
     "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
     "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
-    "//base/security/permission/services/permission_lite/pms_client:pms_client",
+    "//base/security/permission_lite/services/pms_client:pms_client",
     "//base/startup/syspara_lite/frameworks/parameter:parameter",
     "//build/lite/config/component/cJSON:cjson_shared",
     "//foundation/communication/ipc/interfaces/innerkits/c/ipc:ipc_single",
@@ -47,8 +47,8 @@ executable("bm") {
 
   include_dirs = [
     "include",
-    "//base/security/permission/services/permission_lite/pms_client/include",
-    "//base/security/permission/interfaces/innerkits/permission_lite",
+    "//base/security/permission_lite/services/pms_client/include",
+    "//base/security/permission_lite/interfaces/innerkits",
     "//base/startup/syspara_lite/interfaces/kits",
     "${aafwk_lite_path}/interfaces/inner_api/abilitymgr_lite",
     "${aafwk_lite_path}/interfaces/kits/want_lite",
