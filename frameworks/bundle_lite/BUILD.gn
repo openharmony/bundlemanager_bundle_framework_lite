@@ -55,8 +55,8 @@ lite_library("bundle") {
       "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
       "${appexecfwk_lite_path}/utils/bundle_lite",
       "${appexecfwk_lite_path}/frameworks/bundle_lite/include",
-      "//base/security/permission/interfaces/kits/permission_lite",
-      "//base/security/permission/services/permission_lite/pms/include",
+      "//base/security/permission_lite/interfaces/kits",
+      "//base/security/permission_lite/services/pms/include",
       "${aafwk_lite_path}/frameworks/want_lite/include",
       "${aafwk_lite_path}/interfaces/kits/want_lite",
       "${aafwk_lite_path}/interfaces/kits/ability_lite/slite",
@@ -91,13 +91,13 @@ lite_library("bundle") {
     deps = [
       "${aafwk_lite_path}/frameworks/want_lite:want",
       "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
-      "//base/security/permission/services/permission_lite/pms_client:pms_client",
+      "//base/security/permission_lite/services/pms_client:pms_client",
     ]
 
     include_dirs = [
       "include",
-      "//base/security/permission/interfaces/kits/permission_lite",
-      "//base/security/permission/services/permission_lite/pms/include",
+      "//base/security/permission_lite/interfaces/kits",
+      "//base/security/permission_lite/services/pms/include",
       "${aafwk_lite_path}/frameworks/want_lite/include",
       "${aafwk_lite_path}/interfaces/kits/want_lite",
       "${aafwk_lite_path}/interfaces/inner_api/abilitymgr_lite",
