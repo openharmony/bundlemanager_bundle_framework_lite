@@ -41,7 +41,7 @@ public:
     int32_t MoveFile(const char *oldFile, const char *newFile);
     int32_t RemoveFile(const char *file);
     int32_t RemoveInstallDirectory(const char *codePath, const char *dataPath, bool keepData);
-    int32_t CallClientInvoke(int32_t funcId, const char *firstPath, const char *secondPath);
+    int32_t CallClientInvoke(int32_t funcId, const char *firstPath, const char *secondPath, bool keepData = false);
     static int32_t BundleDaemonCallback(uint32_t code, IpcIo* data, IpcIo* reply, MessageOption option);
     static void DeathCallback(void* arg);
     static int Notify(IOwner owner, int code, IpcIo *reply);

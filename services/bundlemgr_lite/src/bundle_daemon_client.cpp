@@ -204,7 +204,8 @@ int32_t BundleDaemonClient::RegisterCallback()
     return WaitResultSync(EC_SUCCESS);
 }
 
-int32_t BundleDaemonClient::CallClientInvoke(int32_t funcId, const char *firstPath, const char *secondPath)
+int32_t BundleDaemonClient::CallClientInvoke(int32_t funcId, const char *firstPath, const char *secondPath,
+    bool keepData)
 {
     IpcIo request;
     char data[MAX_IO_SIZE];
@@ -214,6 +215,10 @@ int32_t BundleDaemonClient::CallClientInvoke(int32_t funcId, const char *firstPa
     WriteString(&request, innerStr.c_str());
 
     WriteUint16(&request, strlen(firstPath));
+
+    if (funcId == REMOVE_INSTALL_DIRECTORY) {
+        WriteBool(&request, keepData);
+    }
 
     Lock<Mutex> lock(mutex_);
 #ifdef __LINUX__
@@ -366,6 +371,6 @@ int32_t BundleDaemonClient::RemoveInstallDirectory(const char *codePath, const c
         return EC_INVALID;
     }
 
-    return CallClientInvoke(REMOVE_INSTALL_DIRECTORY, codePath, dataPath);
+    return CallClientInvoke(REMOVE_INSTALL_DIRECTORY, codePath, dataPath, keepData);
 }
 } // OHOS
