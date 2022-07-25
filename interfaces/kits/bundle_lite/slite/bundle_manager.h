@@ -40,7 +40,6 @@
 
 #include "ability_info.h"
 #include "bundle_info.h"
-#include "bundle_status_callback.h"
 #include "install_param.h"
 #include "stdint.h"
 #include "want.h"

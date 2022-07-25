@@ -17,7 +17,11 @@
 #define OHOS_BMS_INTERFACE_H
 
 #include "feature.h"
+#ifndef __LITEOS_M__
 #include "iproxy_server.h"
+#else
+#include "iunknown.h"
+#endif
 #include "want.h"
 #include "install_param.h"
 #include "bundle_manager.h"
