@@ -19,7 +19,7 @@
 #include "bundle_extractor.h"
 #include "bundle_info_creator.h"
 #include "bundle_util.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "samgr_lite.h"
 #include "securec.h"
 #include "utils.h"

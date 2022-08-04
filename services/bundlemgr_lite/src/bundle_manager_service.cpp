@@ -41,7 +41,7 @@ extern "C" {
 #include "bundle_util.h"
 #include "ipc_skeleton.h"
 #include "rpc_errno.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "samgr_lite.h"
 #include "utils.h"
 #include "want.h"

@@ -20,7 +20,7 @@
 #include <limits>
 #include <ostream>
 
-#include "log.h"
+#include "bundle_log.h"
 #include "securec.h"
 #include "zlib.h"
 

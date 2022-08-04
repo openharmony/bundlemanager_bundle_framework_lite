@@ -22,7 +22,7 @@ namespace OHOS {
 #undef LOG_TAG
 #define LOG_TAG "bundlems"
 #undef LOG_DOMAIN
-#define LOG_DOMAIN 0xD001300
+#define LOG_DOMAIN 0xD001100
 
 #ifdef __LITEOS_M__
 #ifndef HILOG_DEBUG

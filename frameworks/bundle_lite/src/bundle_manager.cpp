@@ -24,7 +24,7 @@
 #include "convert_utils.h"
 #include "iproxy_client.h"
 #include "ipc_skeleton.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "ohos_types.h"
 #include "pms_interface.h"
 #include "samgr_lite.h"

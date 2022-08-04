@@ -23,7 +23,7 @@
 #include "bundle_message_id.h"
 #include "convert_utils.h"
 #include "ipc_skeleton.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "message.h"
 #include "ohos_init.h"
 #include "samgr_lite.h"

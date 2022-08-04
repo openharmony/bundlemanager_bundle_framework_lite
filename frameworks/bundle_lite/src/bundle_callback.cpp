@@ -20,7 +20,7 @@
 #include "bundle_inner_interface.h"
 #include "bundle_manager.h"
 #include "iproxy_client.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "ohos_types.h"
 #include "samgr_lite.h"
 #include "rpc_errno.h"

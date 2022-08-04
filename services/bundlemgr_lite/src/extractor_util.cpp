@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "log.h"
+#include "bundle_log.h"
 
 namespace OHOS {
 ExtractorUtil::ExtractorUtil(const std::string &filePath) : zipFile_(filePath) {}
