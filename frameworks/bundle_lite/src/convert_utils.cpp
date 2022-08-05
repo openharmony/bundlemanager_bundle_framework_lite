@@ -17,7 +17,7 @@
 
 #include "ability_info_utils.h"
 #include "bundle_info_utils.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "module_info_utils.h"
 #include "securec.h"
 #include "utils.h"

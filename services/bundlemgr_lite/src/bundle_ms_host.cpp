@@ -19,7 +19,7 @@
 
 #include "bundle_inner_interface.h"
 #include "bundle_manager_service.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "ohos_init.h"
 #include "samgr_lite.h"
 

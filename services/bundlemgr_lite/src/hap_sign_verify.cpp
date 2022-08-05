@@ -17,7 +17,7 @@
 
 #include "appexecfwk_errors.h"
 #include "bundle_manager_service.h"
-#include "log.h"
+#include "bundle_log.h"
 
 namespace OHOS {
 uint8_t HapSignVerify::VerifySignature(const std::string &hapFilepath, SignatureInfo &signatureInfo)

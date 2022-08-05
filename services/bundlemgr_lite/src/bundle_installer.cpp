@@ -28,7 +28,7 @@
 #include "bundle_parser.h"
 #include "bundle_res_transform.h"
 #include "bundle_util.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "utils.h"
 
 namespace OHOS {

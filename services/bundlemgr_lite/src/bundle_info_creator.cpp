@@ -21,7 +21,7 @@
 #include "bundle_manager_service.h"
 #include "bundle_res_transform.h"
 #include "bundle_util.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "module_info_utils.h"
 #include "securec.h"
 #include "utils.h"

@@ -19,7 +19,7 @@
 #include "bundle_callback_utils.h"
 #include "bundle_manager.h"
 #include "iproxy_client.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "samgr_lite.h"
 #include "rpc_errno.h"
 

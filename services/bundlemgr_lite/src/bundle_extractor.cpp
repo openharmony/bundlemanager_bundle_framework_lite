@@ -21,7 +21,7 @@
 #include "bundle_common.h"
 #include "bundle_util.h"
 #include "extractor_util.h"
-#include "log.h"
+#include "bundle_log.h"
 
 namespace OHOS {
 uint8_t BundleExtractor::ExtractHapProfile(const std::string &hapFile, std::ostringstream &profileStream)

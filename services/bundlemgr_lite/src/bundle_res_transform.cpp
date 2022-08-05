@@ -20,7 +20,7 @@
 #include "bundle_info_utils.h"
 #include "bundle_util.h"
 #include "global.h"
-#include "log.h"
+#include "bundle_log.h"
 #include "module_info_utils.h"
 
 namespace OHOS {
