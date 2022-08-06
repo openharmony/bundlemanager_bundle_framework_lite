@@ -42,7 +42,7 @@ executable("bm") {
     "//base/startup/syspara_lite/frameworks/parameter:parameter",
     "//build/lite/config/component/cJSON:cjson_shared",
     "//foundation/communication/ipc/interfaces/innerkits/c/ipc:ipc_single",
-    "//foundation/distributedschedule/samgr_lite/samgr:samgr",
+    "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
   ]
 
   include_dirs = [
@@ -57,8 +57,8 @@ executable("bm") {
     "${appexecfwk_lite_path}/frameworks/bundle_lite/include",
     "${appexecfwk_lite_path}/utils/bundle_lite",
     "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
-    "//foundation/distributedschedule/samgr_lite/interfaces/kits/samgr",
-    "//foundation/distributedschedule/samgr_lite/interfaces/kits/registry",
+    "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
+    "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
     "//third_party/cJSON",
     "//utils/native/lite/include",
     "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
