@@ -22,8 +22,8 @@
         "deps": {
             "components": [
             "ability_lite",
+            "utils_lite",
             "hilog",
-            "utils_base",
             "permission",
             "samgr_lite",
             "resource_management_lite",
