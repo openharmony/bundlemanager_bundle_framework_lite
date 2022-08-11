@@ -65,8 +65,8 @@ lite_library("bundle") {
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
       "//third_party/bounds_checking_function/include",
-      "//utils/native/lite/include",
-      "//utils/native/lite/memory/include",
+      "//commonlibrary/utils_lite/include",
+      "//commonlibrary/utils_lite/memory/include",
       "//third_party/cJSON",
     ]
   } else {
@@ -108,7 +108,7 @@ lite_library("bundle") {
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
       "//third_party/bounds_checking_function/include",
-      "//utils/native/lite/include",
+      "//commonlibrary/utils_lite/include",
       "//third_party/cJSON",
     ]
 

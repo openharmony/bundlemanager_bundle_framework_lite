@@ -56,6 +56,6 @@ executable("bundle_daemon") {
     "//foundation/systemabilitymgr/samgr_lite/interfaces/innerkits/samgr",
     "//foundation/systemabilitymgr/samgr_lite/interfaces/innerkits/registry",
     "//third_party/zlib/contrib/minizip",
-    "//utils/native/lite/include",
+    "//commonlibrary/utils_lite/include",
   ]
 }

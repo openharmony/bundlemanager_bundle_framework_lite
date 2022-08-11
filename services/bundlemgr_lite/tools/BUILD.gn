@@ -60,7 +60,7 @@ executable("bm") {
     "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
     "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
     "//third_party/cJSON",
-    "//utils/native/lite/include",
+    "//commonlibrary/utils_lite/include",
     "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
   ]
 
