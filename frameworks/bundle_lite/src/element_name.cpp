@@ -42,6 +42,11 @@ void ClearElement(ElementName *element)
     AdapterFree(element->abilityName);
 }
 
+void DeleteElement(ElementName *element)
+{
+    AdapterFree(element);
+}
+
 bool SetElementDeviceID(ElementName *element, const char *deviceId)
 {
     if (element == nullptr) {

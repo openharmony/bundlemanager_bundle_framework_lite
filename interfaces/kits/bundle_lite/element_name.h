@@ -83,6 +83,14 @@ extern "C" {
 void ClearElement(ElementName *element);
 
 /**
+ * @brief Delete <b>ElementName</b>.
+ *
+ * After {@link AbilityInfo} is queried, clear the internal data of an <b>ElementName</b> if it is no longer required.
+ * @param element Indicates the pointer to the <b>ElementName</b> to clear.
+ */
+void DeleteElement(ElementName *element);
+
+/**
  * @brief Sets the device ID used to query {@link AbilityInfo}.
  *
  * @param element Indicates the pointer to the <b>ElementName</b> to set.
