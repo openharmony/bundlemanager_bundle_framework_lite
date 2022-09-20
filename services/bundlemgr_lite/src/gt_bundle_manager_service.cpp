@@ -317,6 +317,9 @@ void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallbac
     AppInfoList *currentNode = nullptr;
     AppInfoList *nextNode = nullptr;
     LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, AppInfoList, appDoubleList) {
+        if (currentNode == nullptr) {
+            return;
+        }
         if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
             (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
             continue;
@@ -433,6 +436,9 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
     AppInfoList *nextNode = nullptr;
 
     LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, AppInfoList, appDoubleList) {
+        if (currentNode == nullptr) {
+            return;
+        }
         if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
             (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
             continue;
