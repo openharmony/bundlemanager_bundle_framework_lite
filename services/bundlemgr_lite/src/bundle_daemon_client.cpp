@@ -283,7 +283,7 @@ int32_t BundleDaemonClient::CreateDataDirectory(const char *dataPath, int32_t ui
     WriteInt32(&request, uid);
     WriteInt32(&request, gid);
     WriteBool(&request, isChown);
-
+    PRINTI("BundleDaemonClient", "uid is %{public}d, isChown is %{public}d", uid, isChown);
     Lock<Mutex> lock(mutex_);
 #ifdef __LINUX__
     return WaitResultSync(bdsClient_->Invoke(bdsClient_, CREATE_DATA_DIRECTORY, &request, this, Notify));

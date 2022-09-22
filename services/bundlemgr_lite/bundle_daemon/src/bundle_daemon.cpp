@@ -200,7 +200,7 @@ int32_t BundleDaemon::CreateDataDirectoryInvoke(IpcIo *req)
     ReadInt32(req, &gid);
     bool isChown;
     ReadBool(req, &isChown);
-
+    PRINTI("BundleDaemonClient", "uid is %{public}d, isChown is %{public}d", uid, isChown);
     return BundleDaemon::GetInstance().handler_.CreateDataDirectory(dataPath, uid, gid, isChown);
 }
 
