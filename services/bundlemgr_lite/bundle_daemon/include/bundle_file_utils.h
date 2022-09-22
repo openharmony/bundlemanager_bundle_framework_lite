@@ -29,6 +29,7 @@ const char PATH_SEPARATOR = '/';
 class BundleFileUtils : public NoCopyable {
 public:
     static bool MkRecursiveDir(const char *dir, bool isReadOthers);
+    static bool MkOwnerDir(const char *dir);
     static bool IsExistDir(const char *path);
     static bool IsExistFile(const char *file);
     static bool RemoveFile(const char *path);

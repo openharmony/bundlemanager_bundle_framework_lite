@@ -140,12 +140,12 @@ int32_t BundleDaemonHandler::CreateDataDirectory(const char *dataPath, int32_t u
     }
 
     if (!BundleFileUtils::IsExistDir(dataDir.c_str())) {
-        if (!BundleFileUtils::MkRecursiveDir(dataDir.c_str(), false)) {
+        if (!BundleFileUtils::MkOwnerDir(dataDir.c_str())) {
             PRINTE("BundleDaemonHandler", "create dataPath fail");
             return EC_NODIR;
         }
     }
-
+    PRINTI("BundleDaemonClient", "uid is %{public}d, isChown is %{public}d", uid, isChown);
     if (isChown && !BundleFileUtils::ChownFile(dataDir.c_str(), uid, gid)) {
         PRINTE("BundleDaemonHandler", "chown file fail");
         return EC_NOFILE;
