@@ -120,13 +120,6 @@ BOOL BundleMsFeature::OnFeatureMessage(Feature *feature, Request *request)
     return TRUE;
 }
 
-static void InnerFreeDataBuff(void *ptr)
-{
-    if (ptr != nullptr) {
-        cJSON_free(ptr);
-    }
-}
-
 uint8_t BundleMsFeature::HasSystemCapability(const uint8_t funcId, IpcIo *req, IpcIo *reply)
 {
     if ((req == nullptr) || (reply == nullptr)) {
