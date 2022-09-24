@@ -72,4 +72,9 @@ struct ResultOfGetBundleSize {
     uint8_t resultCode;
     uint32_t bundleSize;
 };
+
+struct BasicInfo {
+    char *metaDataKey;
+    int32_t flags;
+};
 #endif // OHOS_BUNDLE_CALLBACK_UTILS_H
