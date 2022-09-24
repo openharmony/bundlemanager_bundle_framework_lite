@@ -92,6 +92,7 @@ static uint8_t DeserializeInnerAbilityInfo(IOwner owner, IpcIo *reply)
 
 static uint8_t DeserializeInnerBundleInfo(IOwner owner, IpcIo *reply)
 {
+    HILOG_DEBUG(HILOG_MODULE_APP, "DeserializeInnerBundleInfo start");
     if ((reply == nullptr) || (owner == nullptr)) {
         return OHOS_FAILURE;
     }
@@ -112,14 +113,17 @@ static uint8_t DeserializeInnerBundleInfo(IOwner owner, IpcIo *reply)
     info->bundleInfo = OHOS::ConvertUtils::ConvertStringToBundleInfo(jsonStr, len);
     if (info->bundleInfo == nullptr) {
         info->resultCode = ERR_APPEXECFWK_DESERIALIZATION_FAILED;
+        HILOG_ERROR(HILOG_MODULE_APP, "ConvertStringToBundleInfo failed");
         return ERR_APPEXECFWK_DESERIALIZATION_FAILED;
     }
     info->resultCode = resultCode;
+    HILOG_DEBUG(HILOG_MODULE_APP, "DeserializeInnerBundleInfo finished");
     return resultCode;
 }
 
 static uint8_t DeserializeInnerBundleInfos(IOwner owner, IpcIo *reply)
 {
+    HILOG_DEBUG(HILOG_MODULE_APP, "DeserializeInnerBundleInfos start");
     if ((reply == nullptr) || (owner == nullptr)) {
         return OHOS_FAILURE;
     }
@@ -145,6 +149,7 @@ static uint8_t DeserializeInnerBundleInfos(IOwner owner, IpcIo *reply)
     }
 
     info->resultCode = resultCode;
+    HILOG_DEBUG(HILOG_MODULE_APP, "DeserializeInnerBundleInfos finished");
     return resultCode;
 }
 
@@ -275,6 +280,22 @@ static int Notify(IOwner owner, int code, IpcIo *reply)
         case QUERY_KEEPALIVE_BUNDLE_INFOS:
         case GET_BUNDLE_INFOS_BY_METADATA: {
             return DeserializeInnerBundleInfos(owner, reply);
+        }
+        case GET_BUNDLE_INFO_LENGTH: {
+            ResultOfGetBundleInfos *resultOfGetBundleInfos = reinterpret_cast<ResultOfGetBundleInfos *>(owner);
+            uint8_t errCode;
+            ReadUint8(reply, &errCode);
+            if (errCode != ERR_OK) {
+                HILOG_INFO(HILOG_MODULE_APP, "BundleManager get bundleInfos length failed due to %{public}d", errCode);
+                resultOfGetBundleInfos->resultCode = errCode;
+                return errCode;
+            }
+            ReadInt32(reply, &(resultOfGetBundleInfos->length));
+            HILOG_INFO(HILOG_MODULE_APP, "BundleManager bundleInfo len is: %{public}d", resultOfGetBundleInfos->length);
+            break;
+        }
+        case GET_BUNDLE_INFO_BY_INDEX: {
+            return DeserializeInnerBundleInfo(owner, reply);
         }
         case GET_BUNDLENAME_FOR_UID: {
             return DeserializeInnerBundleName(owner, reply);
@@ -557,6 +578,91 @@ static uint8_t ObtainInnerBundleInfos(const int flags, BundleInfo **bundleInfos,
     return resultOfGetBundleInfos.resultCode;
 }
 
+static uint8_t ObtainBundleInfosOneByOne(BasicInfo basicInfo, int32_t len, uint8_t code, IClientProxy *bmsClient,
+    BundleInfo **bundleInfos)
+{
+    if (bmsClient == nullptr || bundleInfos == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne failed due to nullptr parma");
+        return ERR_APPEXECFWK_OBJECT_NULL;
+    }
+    for (int32_t i = 0; i < len; ++i) {
+        IpcIo innerIpcIo;
+        char data[MAX_IO_SIZE];
+        IpcIoInit(&innerIpcIo, data, MAX_IO_SIZE, 0);
+        WriteInt32(&innerIpcIo, static_cast<int32_t>(code));
+        if (code == GET_BUNDLE_INFOS) {
+            WriteInt32(&innerIpcIo, basicInfo.flags);
+        }
+        if (code == GET_BUNDLE_INFOS_BY_METADATA) {
+            WriteString(&innerIpcIo, basicInfo.metaDataKey);
+        }
+        WriteInt32(&innerIpcIo, i);
+        ResultOfGetBundleInfo resultOfGetBundleInfo;
+        resultOfGetBundleInfo.bundleInfo = nullptr;
+        int32_t ret = bmsClient->Invoke(bmsClient, GET_BUNDLE_INFO_BY_INDEX, &innerIpcIo, &resultOfGetBundleInfo, Notify);
+        if (ret != OHOS_SUCCESS) {
+            HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne invoke failed: %{public}d\n", ret);
+            return ERR_APPEXECFWK_INVOKE_ERROR;
+        }
+        OHOS::BundleInfoUtils::CopyBundleInfo(basicInfo.flags, *bundleInfos + i, *(resultOfGetBundleInfo.bundleInfo));
+        ClearBundleInfo(resultOfGetBundleInfo.bundleInfo);
+        AdapterFree(resultOfGetBundleInfo.bundleInfo);
+    }
+    return OHOS_SUCCESS;
+}
+
+static uint8_t ObtainBundleInfos(BasicInfo basicInfo, BundleInfo **bundleInfos, int32_t *len,
+    uint8_t code, IpcIo *ipcIo)
+{
+    if ((bundleInfos == nullptr) || (len == nullptr) || (ipcIo == nullptr)) {
+        return ERR_APPEXECFWK_OBJECT_NULL;
+    }
+    if (CheckSelfPermission(static_cast<const char *>(PERMISSION_GET_BUNDLE_INFO)) != GRANTED) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfos failed due to permission denied");
+        return ERR_APPEXECFWK_PERMISSION_DENIED;
+    }
+    auto bmsClient = GetBmsClient();
+    if (bmsClient == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfos failed due to nullptr bms client");
+        return ERR_APPEXECFWK_OBJECT_NULL;
+    }
+
+    ResultOfGetBundleInfos resultOfGetBundleInfos;
+    resultOfGetBundleInfos.length = 0;
+    resultOfGetBundleInfos.bundleInfo = nullptr;
+    int32_t ret = bmsClient->Invoke(bmsClient, GET_BUNDLE_INFO_LENGTH, ipcIo, &resultOfGetBundleInfos, Notify);
+    if (ret != OHOS_SUCCESS) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfos invoke failed: %{public}d\n", ret);
+        return ERR_APPEXECFWK_INVOKE_ERROR;
+    }
+
+    if (resultOfGetBundleInfos.length == 0 || resultOfGetBundleInfos.resultCode != ERR_OK) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfos fail");
+        *bundleInfos = nullptr;
+        return resultOfGetBundleInfos.resultCode;
+    }
+
+    *bundleInfos = reinterpret_cast<BundleInfo *>(AdapterMalloc(sizeof(BundleInfo) * resultOfGetBundleInfos.length));
+    if (*bundleInfos == nullptr) {
+        OHOS::BundleInfoUtils::FreeBundleInfos(resultOfGetBundleInfos.bundleInfo, resultOfGetBundleInfos.length);
+        return ERR_APPEXECFWK_OBJECT_NULL;
+    }
+    if (memset_s(*bundleInfos, sizeof(BundleInfo) * (resultOfGetBundleInfos.length), 0, sizeof(BundleInfo) *
+        (resultOfGetBundleInfos.length)) != EOK) {
+        AdapterFree(*bundleInfos);
+        OHOS::BundleInfoUtils::FreeBundleInfos(resultOfGetBundleInfos.bundleInfo, resultOfGetBundleInfos.length);
+        return ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
+    }
+
+    uint8_t res = ObtainBundleInfosOneByOne(basicInfo, resultOfGetBundleInfos.length, code, bmsClient, bundleInfos);
+    if (res != OHOS_SUCCESS) {
+        HILOG_WARN(HILOG_MODULE_APP, "BundleManager ObtainBundleInfos invoke failed: %{public}d\n", res);
+    }
+    *len = resultOfGetBundleInfos.length;
+    OHOS::BundleInfoUtils::FreeBundleInfos(resultOfGetBundleInfos.bundleInfo, resultOfGetBundleInfos.length);
+    return resultOfGetBundleInfos.resultCode;
+}
+
 uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len)
 {
     if ((bundleInfos == nullptr) || (len == nullptr)) {
@@ -569,8 +675,12 @@ uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len)
     IpcIo ipcIo;
     char data[MAX_IO_SIZE];
     IpcIoInit(&ipcIo, data, MAX_IO_SIZE, 0);
+    WriteInt32(&ipcIo, GET_BUNDLE_INFOS);
     WriteInt32(&ipcIo, flags);
-    return ObtainInnerBundleInfos(flags, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
+    BasicInfo basicInfo;
+    basicInfo.flags = flags;
+    basicInfo.metaDataKey = nullptr;
+    return ObtainBundleInfos(basicInfo, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
 }
 
 uint32_t GetBundleSize(const char *bundleName)
