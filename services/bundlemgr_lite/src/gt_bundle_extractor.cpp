@@ -109,7 +109,7 @@ char *GtBundleExtractor::ExtractHapProfile(int32_t fp, uint32_t totalFileSize)
         }
 
         int32_t fileNameLen = strlen(fileName);
-        if (pathLen == 0 && (fileName != nullptr && strcmp(fileName, PROFILE_NAME) == 0)) {
+        if (pathLen == 0 && (strcmp(fileName, PROFILE_NAME) == 0)) {
             UI_Free(fileName);
             fileName = nullptr;
             fileData = reinterpret_cast<char *>(AdapterMalloc(fileSize * sizeof(char)));

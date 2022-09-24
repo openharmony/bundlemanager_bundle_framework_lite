@@ -109,8 +109,7 @@ uint8_t GtBundleInstaller::VerifySignature(const char *path, SignatureInfo &sign
     VerifyResult verifyResult;
     // verify signature
     (void) APPVERI_SetDebugMode(true);
-    int32_t ret = (bundleStyle == THIRD_APP_FLAG) ? APPVERI_AppVerify(path, &verifyResult) :
-        APPVERI_AppVerify(path, &verifyResult);
+    int32_t ret = APPVERI_AppVerify(path, &verifyResult);
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] APPVERI_AppVerify is %d", ret);
     uint8_t errorCode = SwitchErrorCode(ret);
     if (errorCode != ERR_OK) {
@@ -522,9 +521,6 @@ uint8_t GtBundleInstaller::UpdateBundleInfo(uint8_t bundleStyle, uint32_t labelI
     if (!isUpdate) {
         if (bundleStyle == SYSTEM_APP_FLAG) {
             bundleInfo->isSystemApp = true;
-            GtManagerService::GetInstance().AddBundleInfo(bundleInfo);
-        } else if (bundleStyle == THIRD_SYSTEM_APP_FLAG) {
-            bundleInfo->isSystemApp = false;
             GtManagerService::GetInstance().AddBundleInfo(bundleInfo);
         } else {
             bundleInfo->isSystemApp = false;
