@@ -414,10 +414,12 @@ void GtManagerService::RemoveSystemAppPathList(List<ToBeInstalledApp *> *systemP
 
     for (auto node = systemPathList->Begin(); node != systemPathList->End(); node = node->next_) {
         ToBeInstalledApp *toBeInstalledApp = node->value_;
-        AdapterFree(toBeInstalledApp->installedPath);
-        AdapterFree(toBeInstalledApp->path);
-        AdapterFree(toBeInstalledApp->appId);
-        UI_Free(toBeInstalledApp);
+        if (toBeInstalledApp != nullptr) {
+            AdapterFree(toBeInstalledApp->installedPath);
+            AdapterFree(toBeInstalledApp->path);
+            AdapterFree(toBeInstalledApp->appId);
+            UI_Free(toBeInstalledApp);
+        }
     }
 }
 
@@ -702,6 +704,9 @@ void GtManagerService::RemoveBundleResList(const char *bundleName)
 
     for (auto node = bundleResList_->Begin(); node != bundleResList_->End(); node = node->next_) {
         BundleRes *res = node->value_;
+        if (res == nullptr) {
+            return;
+        }
         if (res->bundleName != nullptr && strcmp(bundleName, res->bundleName) == 0) {
             AdapterFree(res->abilityRes);
             AdapterFree(res);
@@ -1003,6 +1008,9 @@ void GtManagerService::APP_QueryAppInfo(const char *appDir, AppInfoList *list)
         return;
     }
     char *fileName = reinterpret_cast<char *>(AdapterMalloc(MAX_NAME_LEN + 1));
+    if (fileName == nullptr) {
+        return;
+    }
     while ((ent = readdir(dir)) != nullptr) {
         if (memset_s(fileName, MAX_NAME_LEN + 1, 0, MAX_NAME_LEN + 1) != EOK) {
             break;
@@ -1035,6 +1043,7 @@ void GtManagerService::APP_QueryAppInfo(const char *appDir, AppInfoList *list)
         APP_InsertAppInfo(appPath, (AppInfoList *)&list->appDoubleList);
         AdapterFree(appPath);
     }
+    closedir(dir);
     AdapterFree(fileName);
 }
 
