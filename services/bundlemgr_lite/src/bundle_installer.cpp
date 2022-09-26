@@ -330,13 +330,10 @@ bool BundleInstaller::MatchPermissions(const std::vector<std::string> & restrict
 
     int32_t size = realRestrictedPermissions.size();
     for (int32_t i = 0; i < size; i++) {
-        bool isMatched = false;
-        for (const auto & restrictedPermission : restrictedPermissions) {
-            if (realRestrictedPermissions[i] == restrictedPermission) {
-                isMatched = true;
-                break;
-            }
-        }
+        bool isMatched = std::any_of(restrictedPermissions.begin(), restrictedPermissions.end(),
+            [realRestrictedPermissions, i](const auto & restrictedPermission)->bool {
+                return realRestrictedPermissions[i] == restrictedPermission;
+        });
         if (!isMatched) {
             HILOG_WARN(HILOG_MODULE_APP, "provisionPermissions is not match the bundle reqPermissions!");
             return false;

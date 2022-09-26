@@ -672,10 +672,9 @@ static int32_t GenerateInnerUid(std::map<int, std::string> &innerMap, const std:
     }
     int32_t ret = 0;
     for (int32_t i = 0; i < innerMap.rbegin()->first; ++i) {
-        if (innerMap.find(i) == innerMap.end()) {
-            innerMap.emplace(i, bundleName);
-            ret = i + baseUid;
-            return ret;
+        auto res = innerMap.emplace(i, bundleName);
+        if (res.second) {
+            return i + baseUid;
         }
     }
 

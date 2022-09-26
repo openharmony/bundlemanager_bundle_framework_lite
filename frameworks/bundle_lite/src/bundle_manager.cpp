@@ -172,7 +172,7 @@ static uint8_t DeserializeInnerBundleName(IOwner owner, IpcIo *reply)
         info->resultCode = ERR_APPEXECFWK_DESERIALIZATION_FAILED;
         return ERR_APPEXECFWK_DESERIALIZATION_FAILED;
     }
-    if (length < 0 || length > MAX_BUNDLE_NAME) {
+    if (length > MAX_BUNDLE_NAME) {
         info->resultCode = ERR_APPEXECFWK_DESERIALIZATION_FAILED;
         return ERR_APPEXECFWK_DESERIALIZATION_FAILED;
     }
