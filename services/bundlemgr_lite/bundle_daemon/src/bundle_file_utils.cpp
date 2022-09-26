@@ -78,6 +78,32 @@ bool BundleFileUtils::MkRecursiveDir(const char *dir, bool isReadOthers)
     return true;
 }
 
+bool BundleFileUtils::MkOwnerDir(const char *dir)
+{
+    if (dir == nullptr) {
+        return false;
+    }
+    if (IsExistDir(dir)) {
+        return true;
+    }
+    size_t len = strlen(dir);
+    if (len == 0 || len > PATH_MAX) {
+        return false;
+    }
+    // Create directories level by level
+    char rootDir[PATH_MAX] = { '\0' };
+    for (size_t i = 0; i < len; ++i) {
+        rootDir[i] = dir[i];
+        if ((rootDir[i] == PATH_SEPARATOR || i == (len - 1)) && !IsExistDir(rootDir)) {
+            mode_t mode = S_IRWXU | S_IRWXG;
+            if (mkdir(rootDir, mode) < 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 bool BundleFileUtils::RemoveFile(const char *path)
 {
     if (IsExistFile(path)) {

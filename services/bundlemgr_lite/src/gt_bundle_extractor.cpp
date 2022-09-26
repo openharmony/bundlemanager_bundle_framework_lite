@@ -109,7 +109,7 @@ char *GtBundleExtractor::ExtractHapProfile(int32_t fp, uint32_t totalFileSize)
         }
 
         int32_t fileNameLen = strlen(fileName);
-        if (pathLen == 0 && (fileName != nullptr && strcmp(fileName, PROFILE_NAME) == 0)) {
+        if (pathLen == 0 && (strcmp(fileName, PROFILE_NAME) == 0)) {
             UI_Free(fileName);
             fileName = nullptr;
             fileData = reinterpret_cast<char *>(AdapterMalloc(fileSize * sizeof(char)));
@@ -154,7 +154,7 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
         }
 
         int32_t fileNameLen = strlen(fileName);
-        if ((strlen(relativeFilePath) == 0 && (fileName != nullptr && strcmp(fileName, PROFILE_NAME) == 0)) ||
+        if ((strlen(relativeFilePath) == 0 && (strcmp(fileName, PROFILE_NAME) == 0)) ||
             !BundleUtil::StartWith(relativeFilePath, ASSET_JS_PATH)) {
             if (!GtExtractorUtil::HasWrittenFile(path, relativeFilePath, fileName, fp, fileSize)) {
                 UI_Free(fileName);
