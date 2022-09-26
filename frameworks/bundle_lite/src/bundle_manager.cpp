@@ -599,7 +599,8 @@ static uint8_t ObtainBundleInfosOneByOne(BasicInfo basicInfo, int32_t len, uint8
         WriteInt32(&innerIpcIo, i);
         ResultOfGetBundleInfo resultOfGetBundleInfo;
         resultOfGetBundleInfo.bundleInfo = nullptr;
-        int32_t ret = bmsClient->Invoke(bmsClient, GET_BUNDLE_INFO_BY_INDEX, &innerIpcIo, &resultOfGetBundleInfo, Notify);
+        int32_t ret = bmsClient->Invoke(bmsClient, GET_BUNDLE_INFO_BY_INDEX, &innerIpcIo,
+            &resultOfGetBundleInfo, Notify);
         if (ret != OHOS_SUCCESS) {
             HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne invoke failed: %{public}d\n", ret);
             return ERR_APPEXECFWK_INVOKE_ERROR;
