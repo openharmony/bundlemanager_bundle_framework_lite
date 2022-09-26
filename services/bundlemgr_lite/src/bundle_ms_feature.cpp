@@ -626,7 +626,7 @@ uint8_t BundleMsFeature::HandleGetBundleInfosByIndex(const uint8_t funcId, IpcIo
         return ERR_APPEXECFWK_OBJECT_NULL;
     }
     int32_t lengthOfBundleInfo = 0;
-    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo);;
+    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo);
     int32_t index = 0;
     ReadInt32(req, &index);
     HILOG_INFO(HILOG_MODULE_APP, "BundleMS index is : %{public}d\n", index);
