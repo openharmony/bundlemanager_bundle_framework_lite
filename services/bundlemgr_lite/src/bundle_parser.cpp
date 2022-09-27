@@ -711,8 +711,9 @@ uint8_t BundleParser::ParseAbilityDeviceCap(const cJSON *abilityObjectItem, Abil
                 continue;
             }
             deviceCapName = abilityInfo.deviceCap.systemCapName + index;
-            if (strncpy_s(deviceCapName->name, sizeof(deviceCapName->name),
-                deviceCapObject->valuestring, strlen(deviceCapObject->valuestring)) != EOK) {
+            if ((deviceCapObject->valuestring != nullptr) &&
+                (strncpy_s(deviceCapName->name, sizeof(deviceCapName->name),
+                deviceCapObject->valuestring, strlen(deviceCapObject->valuestring)) != EOK)) {
                 HILOG_ERROR(HILOG_MODULE_APP, "ParseAbilityDeviceCap strncpy deviceCap fail!");
                 AdapterFree(abilityInfo.deviceCap.systemCapName);
                 abilityInfo.deviceCap.systemCapNum = 0;
