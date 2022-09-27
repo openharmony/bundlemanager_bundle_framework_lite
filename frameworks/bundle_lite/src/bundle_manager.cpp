@@ -602,8 +602,13 @@ static uint8_t ObtainBundleInfosOneByOne(BasicInfo basicInfo, int32_t len, uint8
         int32_t ret = bmsClient->Invoke(bmsClient, GET_BUNDLE_INFO_BY_INDEX, &innerIpcIo,
             &resultOfGetBundleInfo, Notify);
         if (ret != OHOS_SUCCESS) {
-            HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne invoke failed: %{public}d\n", ret);
+            HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne invoke failed: %{public}d", ret);
             return ERR_APPEXECFWK_INVOKE_ERROR;
+        }
+        if (resultOfGetBundleInfo.bundleInfo == nullptr) {
+            HILOG_ERROR(HILOG_MODULE_APP, "BundleManager ObtainBundleInfosOneByOne failed: %{public}d",
+                resultOfGetBundleInfo.resultCode);
+            return resultOfGetBundleInfo.resultCode;
         }
         OHOS::BundleInfoUtils::CopyBundleInfo(basicInfo.flags, *bundleInfos + i, *(resultOfGetBundleInfo.bundleInfo));
         ClearBundleInfo(resultOfGetBundleInfo.bundleInfo);
@@ -661,7 +666,7 @@ static uint8_t ObtainBundleInfos(BasicInfo basicInfo, BundleInfo **bundleInfos, 
     }
     *len = resultOfGetBundleInfos.length;
     OHOS::BundleInfoUtils::FreeBundleInfos(resultOfGetBundleInfos.bundleInfo, resultOfGetBundleInfos.length);
-    return resultOfGetBundleInfos.resultCode;
+    return res;
 }
 
 uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len)
