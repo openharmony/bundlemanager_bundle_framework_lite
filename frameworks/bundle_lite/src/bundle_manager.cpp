@@ -681,12 +681,17 @@ uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len)
     IpcIo ipcIo;
     char data[MAX_IO_SIZE];
     IpcIoInit(&ipcIo, data, MAX_IO_SIZE, 0);
+#ifdef __LINUX__
+    WriteInt32(&ipcIo, flags);
+    return ObtainInnerBundleInfos(flags, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
+#else
     WriteInt32(&ipcIo, GET_BUNDLE_INFOS);
     WriteInt32(&ipcIo, flags);
     BasicInfo basicInfo;
     basicInfo.flags = flags;
     basicInfo.metaDataKey = nullptr;
     return ObtainBundleInfos(basicInfo, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
+#endif
 }
 
 uint32_t GetBundleSize(const char *bundleName)
