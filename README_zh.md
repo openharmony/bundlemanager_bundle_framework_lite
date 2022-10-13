@@ -1,14 +1,16 @@
-# 包管理组件<a name="ZH-CN_TOPIC_0000001061838370"></a>
+# 包管理子系统<a name="ZH-CN_TOPIC_0000001061838370"></a>
 
 -   [简介](#section11660541593)
 -   [目录](#section1464106163817)
+-   [编译构建/使用方法](#section1464106163819)
+-   [使用说明](#section1464106163820)
 -   [相关仓](#section93061357133720)
 
 ## 简介<a name="section11660541593"></a>
 
-**包管理组件**，是OpenHarmony为开发者提供的安装包管理框架。包管理组件的由如下模块组成：
+**包管理子系统**是OpenHarmony为开发者提供的应用安装包的管理框架，该模块实现的功能包括了应用的安装，卸载，升级，应用信息的查询和应用状态监听。当前仅支持在OpenHarmony的轻量级设备上运行，支持的设备包括穿戴手表，Hi3516DV300等。包管理子系统由如下模块组成：
 
-**图 1**  包管理组件框架图<a name="fig1047932418305"></a>  
+**图 1**  包管理子系统架构图<a name="fig1047932418305"></a>  
 ![](figures/包管理组件框架图.png "包管理组件框架图")
 
 -   **BundleKit**：是包管理服务对外提供的接口，有安装/卸载接口、包信息查询接口、包状态变化监听接口。
@@ -38,18 +40,34 @@
              └── bundle_lite                # 包管理服务实现中用到的工具性的代码
 ```
 
--   包管理服务为BundleMs，服务运行于foudation进程中；
--   BundleMs注册到sa\_manager中，sa\_manager运行于foundation进程中，sa\_manager为BundleMs创建线程运行环境。具体创建BundleMs服务的方式以及使用该服务的方式，可参考系统服务框架子系统；
--   系统启动后，BundleMs会随系统启动而启动；
--   使用bm工具可以安装指定的hap包（以hispark\_taurus为例，bm工具在系统构建后放置在out/hispark\_taurus/ipcamera\_hispark\_taurus/dev\_tools/bin下）：
+## 编译构建/使用方法 <a name="section1464106163819"></a>
+
+-  当前OpenHarmony使用hb工具进行编译，需在代码的根目录下执行，编译的命令如下：
+```
+hb set                    # 选择需要烧录的设备类型
+hb build -f               # 编译全量的代码
+hb build -T bundlems      # 编译单个模块
+```
+-  使用bm工具可以安装指定的hap包（以hispark\_taurus为例，bm工具在系统构建后放置在out/hispark\_taurus/ipcamera\_hispark\_taurus/dev\_tools/bin下）：
 
 ```
-./bin/bm install -p /nfs/xxxx.hap
+./bin/bm install -p /nfs/xxxx.hap      # 安装xxxx.hap
 ```
+-  使用bm工具查询应用的信息，具体执行命令如下：
+
+```
+./bin/bm dump -n 包名     # 查询对应包名的应用的包信息
+./bin/bm dump -l          # 查询所有应用的包信息
+```
+
+## 使用说明 <a name="section1464106163820"></a>
+
+-   包管理服务为BundleMs，服务运行于foudation进程中；
+-   系统启动后，BundleMs会随系统启动而启动；
+-   BundleMs注册到sa\_manager中，sa\_manager运行于foundation进程中，sa\_manager为BundleMs创建线程运行环境。具体创建BundleMs服务的方式以及使用该服务的方式，可参考系统服务框架子系统；
+
 
 ## 相关仓<a name="section93061357133720"></a>
-
-[用户程序框架子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E7%94%A8%E6%88%B7%E7%A8%8B%E5%BA%8F%E6%A1%86%E6%9E%B6%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
 
 [ability\_ability\_lite](https://gitee.com/openharmony/ability_ability_lite/blob/master/README_zh.md)
 
