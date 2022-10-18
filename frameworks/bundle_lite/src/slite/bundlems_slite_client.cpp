@@ -159,6 +159,9 @@ uint8_t BundleMsClient::QueryAbilityInfo (const Want *want, AbilityInfo *ability
 
 uint8_t BundleMsClient::GetBundleInfo (const char *bundleName, int32_t flags, BundleInfo *bundleInfo) const
 {
+    if ((bundleName == nullptr) || (bundleInfo == nullptr)) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
     if (!Initialize()) {
         return -1;
     }
@@ -167,6 +170,12 @@ uint8_t BundleMsClient::GetBundleInfo (const char *bundleName, int32_t flags, Bu
 
 uint8_t BundleMsClient::GetBundleInfos (int32_t flags, BundleInfo **bundleInfos, int32_t *len) const
 {
+    if (bundleInfos == nullptr) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
+    if (len == nullptr) {
+        return ERR_APPEXECFWK_QUERY_NO_INFOS;
+    }
     if (!Initialize()) {
         return -1;
     }
