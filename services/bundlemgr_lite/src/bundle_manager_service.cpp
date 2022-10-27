@@ -123,7 +123,7 @@ bool ManagerService::GetAmsInterface(AmsInnerInterface **amsInterface)
         return false;
     }
 
-    int result = iUnknown->QueryInterface(iUnknown, 0, (void **) amsInterface);
+    int result = iUnknown->QueryInterface(iUnknown, 0, reinterpret_cast<void **>(amsInterface));
     if (result != 0) {
         HILOG_ERROR(HILOG_MODULE_APP, "BundleMS Query ams Interface failed: %{public}d\n", result);
         return false;
@@ -647,18 +647,16 @@ uint32_t ManagerService::GetBundleSize(const char *bundleName)
 
 std::string ManagerService::GetCodeDirPath() const
 {
-    std::string codeDirPath;
     if (installer_ == nullptr) {
-        return codeDirPath;
+        return "";
     }
     return installer_->GetCodeDirPath();
 }
 
 std::string ManagerService::GetDataDirPath() const
 {
-    std::string dataDirPath;
     if (installer_ == nullptr) {
-        return dataDirPath;
+        return "";
     }
     return installer_->GetDataDirPath();
 }
