@@ -509,7 +509,7 @@ bool ZipFile::UnzipWithInflated(const ZipEntry &zipEntry, const uint16_t extraSi
 
         size_t inflateLen = UNZIP_BUF_OUT_LEN - zstream.avail_out;
         if (inflateLen > 0) {
-            dest.write((const char*)bufOut, inflateLen);
+            dest.write(reinterpret_cast<const char*>(bufOut), inflateLen);
             zstream.next_out = bufOut;
             zstream.avail_out = UNZIP_BUF_OUT_LEN;
             errorTimes = 0;
