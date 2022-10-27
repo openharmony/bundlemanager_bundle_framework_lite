@@ -648,8 +648,7 @@ uint32_t ManagerService::GetBundleSize(const char *bundleName)
 std::string ManagerService::GetCodeDirPath() const
 {
     if (installer_ == nullptr) {
-        std::string codeDirPath;
-        return codeDirPath;
+        return "";
     }
     return installer_->GetCodeDirPath();
 }
@@ -657,8 +656,7 @@ std::string ManagerService::GetCodeDirPath() const
 std::string ManagerService::GetDataDirPath() const
 {
     if (installer_ == nullptr) {
-        std::string dataDirPath;
-        return dataDirPath;
+        return "";
     }
     return installer_->GetDataDirPath();
 }

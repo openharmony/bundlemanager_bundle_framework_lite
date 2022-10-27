@@ -320,17 +320,17 @@ void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallbac
         if (currentNode == nullptr) {
             return;
         }
-        if ((strcmp((reinterpret_cast<AppInfoList *>(currentNode))->filePath, ".") == 0) ||
-            (strcmp((reinterpret_cast<AppInfoList *>(currentNode))->filePath, "..") == 0)) {
+        if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
+            (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
             continue;
         }
 
-        if (!BundleUtil::IsFile((reinterpret_cast<AppInfoList *>(currentNode))->filePath) ||
-            !BundleUtil::EndWith((reinterpret_cast<AppInfoList *>(currentNode))->filePath, INSTALL_FILE_SUFFIX)) {
+        if (!BundleUtil::IsFile(((AppInfoList *)currentNode)->filePath) ||
+            !BundleUtil::EndWith(((AppInfoList *)currentNode)->filePath, INSTALL_FILE_SUFFIX)) {
             GtManagerService::APP_FreeAllAppInfo(list);
             return;
         }
-        (void) Install((reinterpret_cast<AppInfoList *>(currentNode))->filePath, nullptr, installerCallback);
+        (void) Install(((AppInfoList *)currentNode)->filePath, nullptr, installerCallback);
     }
     GtManagerService::APP_FreeAllAppInfo(list);
 }
@@ -441,21 +441,21 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
         if (currentNode == nullptr) {
             return;
         }
-        if ((strcmp((reinterpret_cast<AppInfoList *>(currentNode))->filePath, ".") == 0) ||
-            (strcmp((reinterpret_cast<AppInfoList *>(currentNode))->filePath, "..") == 0)) {
+        if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
+            (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
             continue;
         }
 
-        if (BundleUtil::StartWith((reinterpret_cast<AppInfoList *>(currentNode))->filePath, SYSTEM_BUNDLE_PATH)) {
+        if (BundleUtil::StartWith(((AppInfoList *)currentNode)->filePath, SYSTEM_BUNDLE_PATH)) {
             scanFlag = SYSTEM_APP_FLAG;
-        } else if (BundleUtil::StartWith((reinterpret_cast<AppInfoList *>(currentNode))->filePath, THIRD_SYSTEM_BUNDLE_PATH)) {
+        } else if (BundleUtil::StartWith(((AppInfoList *)currentNode)->filePath, THIRD_SYSTEM_BUNDLE_PATH)) {
             scanFlag = THIRD_SYSTEM_APP_FLAG;
         } else {
             continue; // skip third app
         }
 
         // scan system app
-        bool res = CheckSystemBundleIsValid((reinterpret_cast<AppInfoList *>(currentNode))->filePath, &bundleName, versionCode);
+        bool res = CheckSystemBundleIsValid(((AppInfoList *)currentNode)->filePath, &bundleName, versionCode);
         if (!res) {
             APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_INVALID_SYSTEM_APP);
             AdapterFree(bundleName);
@@ -469,7 +469,7 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
             continue;
         }
 
-        ReloadEntireBundleInfo((reinterpret_cast<AppInfoList *>(currentNode))->filePath, bundleName,
+        ReloadEntireBundleInfo(((AppInfoList *)currentNode)->filePath, bundleName,
             systemPathList, versionCode, scanFlag);
         AdapterFree(bundleName);
     }
@@ -979,7 +979,7 @@ int32_t GtManagerService::ReportUninstallCallback(uint8_t errCode, uint8_t insta
 
 AppInfoList *GtManagerService::APP_InitAllAppInfo()
 {
-    AppInfoList *list = reinterpret_cast<AppInfoList *>(AdapterMalloc(sizeof(AppInfoList)));
+    AppInfoList *list = (AppInfoList *)AdapterMalloc(sizeof(AppInfoList));
     if (list == nullptr) {
         return nullptr;
     }
@@ -1054,7 +1054,7 @@ void GtManagerService::APP_InsertAppInfo(char *filePath, AppInfoList *list)
         return;
     }
 
-    AppInfoList *app = reinterpret_cast<AppInfoList *>(AdapterMalloc(sizeof(AppInfoList)));
+    AppInfoList *app = (AppInfoList *)AdapterMalloc(sizeof(AppInfoList));
     if (app == nullptr) {
         return;
     }
@@ -1110,7 +1110,7 @@ void SetCurrentBundle(const char *name)
     }
 
     int len = strlen(name);
-    g_currentBundle = static_cast<char *>(AdapterMalloc(len + 1));
+    g_currentBundle = (char *)AdapterMalloc(len + 1);
     if (g_currentBundle == nullptr || strncpy_s(g_currentBundle, len + 1, name, len) < 0) {
         AdapterFree(g_currentBundle);
     }
@@ -1126,7 +1126,7 @@ const char *GetCurrentBundle()
     }
 
     int len = strlen(g_currentBundle);
-    char *bundleName = static_cast<char *>(AdapterMalloc(len + 1));
+    char *bundleName = (char *)AdapterMalloc(len + 1);
     if (bundleName == nullptr || strncpy_s(bundleName, len + 1, g_currentBundle, len) < 0) {
         AdapterFree(bundleName);
         MutexRelease(&g_currentBundleMutex);
