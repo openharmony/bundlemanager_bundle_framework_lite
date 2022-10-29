@@ -39,7 +39,7 @@ BundleMgrSliteFeatureImpl g_bmsSliteImpl = {
     DEFAULT_IUNKNOWN_ENTRY_END
 };
 
-static void Init()
+void BundleMgrSliteFeature::Init()
 {
     SamgrLite *samgrLite = SAMGR_GetInstance();
     CHECK_NULLPTR_RETURN(samgrLite, "BundleMgrSliteFeature", "get samgr error");
