@@ -39,7 +39,7 @@ BundleMgrSliteFeatureImpl g_bmsSliteImpl = {
     DEFAULT_IUNKNOWN_ENTRY_END
 };
 
-static void Init()
+void BundleMgrSliteFeature::Init()
 {
     SamgrLite *samgrLite = SAMGR_GetInstance();
     CHECK_NULLPTR_RETURN(samgrLite, "BundleMgrSliteFeature", "get samgr error");
@@ -54,7 +54,6 @@ static void Init()
     BOOL apiResult = samgrLite->RegisterFeatureApi(BMS_SERVICE, BMS_SLITE_FEATURE, publicApi);
     PRINTI("BundleMgrSliteFeature", "bms feature init %{public}s", apiResult ? "success" : "failure");
 }
-SYSEX_FEATURE_INIT(Init);
 
 BundleMgrSliteFeature::BundleMgrSliteFeature() : Feature(), identity_()
 {
