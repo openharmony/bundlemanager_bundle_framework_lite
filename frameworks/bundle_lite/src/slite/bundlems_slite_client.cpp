@@ -27,6 +27,7 @@
 #include "want_utils.h"
 
 namespace OHOS {
+const unsigned int BMS_INSTALL_MSG = 100;
 const unsigned int ERROR_SLEEP_TIMES = 300;
 const unsigned int RETRY_TIMES = 10;
 Bmsbuff *g_bmsbuff = nullptr;
