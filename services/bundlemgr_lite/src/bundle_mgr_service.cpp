@@ -17,6 +17,7 @@
 
 #include "bundle_service_interface.h"
 #include "bundlems_log.h"
+#include "bundle_mgr_slite_feature.h"
 #include "gt_bundle_manager_service.h"
 #include "ohos_init.h"
 #include "samgr_lite.h"
@@ -40,6 +41,7 @@ static void Init()
     CHECK_NULLPTR_RETURN(sm, "BundleManagerService", "get samgr error");
 #ifdef __LITEOS_M__
     sm->RegisterService(BundleMgrService::GetInstance());
+    BundleMgrSliteFeature::Init();
 #else
     BOOL result = sm->RegisterService(BundleMgrService::GetInstance());
     PRINTI("BundleManagerService", "bms starts %{public}s", result ? "successfully" : "unsuccessfully");
