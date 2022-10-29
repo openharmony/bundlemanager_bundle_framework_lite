@@ -40,6 +40,7 @@ public:
     static bool RegisterInstallerCallback(InstallerCallback installerCallback);
     static void UpdateBundleInfoList();
     static uint8_t GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len);
+    static void Init();
 
     static BundleMgrSliteFeature *GetInstance()
     {
