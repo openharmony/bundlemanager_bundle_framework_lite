@@ -49,6 +49,27 @@ const int32_t MAX_JSON_SIZE = 1024 * 64;
 const uint32_t MAX_JSON_SIZE = 1024 * 64;
 #endif
 
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+static void *CJsonBmsMalloc(size_t size)
+{
+    return OhosMalloc(MEM_TYPE_CJSON_LSRAM, size);
+}
+
+static void CJsonBmsFree(void *pointer)
+{
+    OhosFree(pointer);
+}
+
+static void OhosBmsCjsonHooksInit(void)
+{
+    cJSON_Hooks hooks;
+    hooks.malloc_fn = CJsonBmsMalloc;
+    hooks.free_fn = CJsonBmsFree;
+    cJSON_InitHooks(&hooks);
+}
+#endif // CONFIG_FT_MODE
+#endif // __LITEOS_M__
 /*
  * path should not include ".." or "./" or ".\0"
  */
@@ -93,7 +114,11 @@ bool BundleUtil::IsFile(const char *path)
     if (ret != 0) {
         return false;
     }
-
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+    OhosBmsCjsonHooksInit();
+#endif
+#endif
     int32_t fp = open(path, O_RDONLY, S_IREAD | S_IWRITE);
     if (fp >= 0) {
         close(fp);
@@ -113,7 +138,11 @@ bool BundleUtil::IsDir(const char *path)
     if (ret != 0) {
         return false;
     }
-
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+    OhosBmsCjsonHooksInit();
+#endif
+#endif
     if ((buf.st_mode & S_IFDIR) == S_IFDIR) {
         return true;
     }
@@ -183,6 +212,11 @@ uint32_t BundleUtil::GetFileSize(const char *filePath)
     if (ret != 0) {
         return 0;
     }
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+    OhosBmsCjsonHooksInit();
+#endif
+#endif
     return fileInfo.st_size;
 }
 
@@ -256,6 +290,11 @@ uint32_t BundleUtil::GetCurrentFolderSize(const char *dirPath, List<char *>* lis
             list->PushBack(Utils::Strdup(filePath));
         }
     }
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+    OhosBmsCjsonHooksInit();
+#endif
+#endif
     closedir(dir);
     return fileSize;
 }
@@ -351,7 +390,11 @@ cJSON *BundleUtil::GetJsonStream(const char *path)
 #endif
         return nullptr;
     }
-
+#ifdef __LITEOS_M__
+#ifndef CONFIG_FT_MODE
+    OhosBmsCjsonHooksInit();
+#endif
+#endif
     if (size > MAX_JSON_SIZE) {
 #ifdef APP_PLATFORM_WATCHGT
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] GetJsonStream size fail:%d", size);

@@ -76,7 +76,7 @@ uint8_t GtBundleExtractor::ExtractHap(const char *codePath, const char *bundleNa
         if (errorCode != ERR_OK) {
             UI_Free(relativeFilePath);
             UI_Free(fileName);
-            return errorCode;
+            break;
         }
         index = index + INT_LENGTH + strlen(fileName) + INT_LENGTH + strlen(relativeFilePath) + LONG_LENGTH + fileSize;
         UI_Free(relativeFilePath);
@@ -84,7 +84,7 @@ uint8_t GtBundleExtractor::ExtractHap(const char *codePath, const char *bundleNa
         relativeFilePath = nullptr;
         fileName = nullptr;
     }
-    return errorCode;
+    return ERR_OK;
 }
 
 char *GtBundleExtractor::ExtractHapProfile(int32_t fp, uint32_t totalFileSize)
@@ -142,6 +142,7 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
 
     uint8_t errorCode = ExtractFileDataPos(fp, index);
     if (errorCode != ERR_OK) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] extract file data pos failed!");
         return false;
     }
 
@@ -150,7 +151,7 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] get file attr failed!");
             UI_Free(fileName);
             UI_Free(relativeFilePath);
-            return false;
+            break;
         }
 
         int32_t fileNameLen = strlen(fileName);
@@ -185,13 +186,14 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
     if (!BundleUtil::CheckRealPath(path)) {
         return ERR_APPEXECFWK_INSTALL_FAILED_PARAM_ERROR;
     }
-#ifndef __LITEOS_M__
+#ifdef __LITEOS_M__
+    int32_t totalFileSize = BundleUtil::GetFileSize(path);
+#else
     int32_t totalFileSize = APPVERI_GetUnsignedFileLength(path);
     if (totalFileSize == V_ERR) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] get unsigned file length failed!");
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
-#else
-    int32_t totalFileSize = 0;
 #endif
     char *emptyJsPathComp[] = {const_cast<char *>(TMP_RESOURCE_DIR), const_cast<char *>(ASSET_JS_PATH)};
     char *emptyJsPath = BundleUtil::Strscat(emptyJsPathComp, sizeof(emptyJsPathComp) / sizeof(char *));
@@ -205,12 +207,13 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
     }
     AdapterFree(emptyJsPath);
 
-    int32_t fp = open(path, O_RDONLY, S_IREAD | S_IWRITE);
+    int32_t fp = open(path, O_RDONLY, S_IREAD);
     if (fp < 0) {
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_NOT_EXISTS;
     }
     // extractor config.json、 resources dir and resources.index in TMP_RESOURCE_DIR
     if (!ExtractResourceFile(TMP_RESOURCE_DIR, fp, static_cast<uint32_t>(totalFileSize))) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] extract resource file failed!");
         close(fp);
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_PROFILE_ERROR;
     }
@@ -219,6 +222,7 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
     BundleRes bundleRes = { 0 };
     BundleInfo *bundleInfo = GtBundleParser::ParseHapProfile(TMP_RESOURCE_DIR, &bundleRes);
     if (bundleInfo == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] parse hap profile get bundle info failed!");
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_PROFILE_ERROR;
     }
     if (bundleRes.abilityRes != nullptr) {
@@ -252,9 +256,7 @@ uint8_t GtBundleExtractor::ExtractBundleParam(const char *path, int32_t &fpStart
     if (errorCode != ERR_OK) {
         return errorCode;
     }
-#ifdef __LITEOS_M__
-    close(fp);
-#endif
+
     if (strlen(*bundleName) > MAX_BUNDLE_NAME_LEN || strlen(*bundleName) < MIN_BUNDLE_NAME_LEN) {
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_INVALID_BUNDLENAME_LENGTH;
     }
