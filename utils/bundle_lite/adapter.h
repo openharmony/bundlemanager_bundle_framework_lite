@@ -29,6 +29,8 @@
 #include "ohos_errno.h"
 #include "ohos_types.h"
 
+#define char unsigned char
+
 #define AdapterMalloc(a) malloc(a)
 #define AdapterFree(a) \
     do { \

@@ -15,6 +15,7 @@
 
 #include "bundle_mgr_service.h"
 
+#include "adapter.h"
 #include "bundle_service_interface.h"
 #include "bundlems_log.h"
 #include "bundle_mgr_slite_feature.h"
@@ -62,7 +63,11 @@ BOOL BundleMgrService::ServiceInitialize(Service *service, Identity identity)
     BundleMgrService *bundleManagerService = static_cast<BundleMgrService *>(service);
     bundleManagerService->identity_ = identity;
     Request request = {
+#ifndef __LITEOS_M__
         .msgId = BMS_SCAN_PACKAGE_MSG,
+#else
+        .msgId = BMS_REGISTER_CALLBACK_MSG,
+#endif
         .len = 0,
         .data = nullptr,
         .msgValue = 0,
@@ -99,11 +104,7 @@ BOOL BundleMgrService::ServiceMessageHandle(Service *service, Request *request)
 
 TaskConfig BundleMgrService::GetServiceTaskConfig(Service *service)
 {
-#ifdef __LITEOS_M__
     TaskConfig config = {LEVEL_HIGH, PRI_ABOVE_NORMAL, STACK_SIZE, QUEUE_SIZE, SINGLE_TASK};
-#else
-    TaskConfig config = {LEVEL_HIGH, PRI_BELOW_NORMAL, STACK_SIZE, QUEUE_SIZE, SINGLE_TASK};
-#endif
     return config;
 }
 } // namespace OHOS
