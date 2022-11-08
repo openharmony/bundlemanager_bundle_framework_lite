@@ -37,7 +37,7 @@ if (ohos_kernel_type == "liteos_m") {
       "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
       "//base/global/resource_management_lite/frameworks/resmgr_lite:global_resmgr",
       "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_static",
-	  "//build/lite/config/component/cJSON:cjson_static",
+      "//build/lite/config/component/cJSON:cjson_static",
       "//foundation/arkui/ace_engine_lite/frameworks:ace_lite",
       "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
       "//third_party/jerryscript/jerry-core:jerry-core_static"
