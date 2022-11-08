@@ -402,6 +402,7 @@ BundleInfo *GtBundleParser::CreateBundleInfo(const char *path, const BundleProfi
     uint8_t errorCode = ConvertResInfoToBundleInfo(path, bundleRes.abilityRes->labelId, bundleRes.abilityRes->iconId,
         bundleInfo);
     if (errorCode != ERR_OK) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] convert res to bundle info failed!");
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return nullptr;
     }
@@ -419,11 +420,7 @@ BundleInfo *GtBundleParser::CreateBundleInfo(const char *path, const BundleProfi
         return nullptr;
     }
     // set abilityInfo
-#ifdef __LITEOS_M__
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = bundleInfo->bundleName};
-#else
-    AbilityInfo abilityInfo = {.bundleName = bundleInfo->bundleName, .srcPath = jsPath};
-#endif
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(bundleInfo, abilityInfo)) {
         AdapterFree(abilityInfo.srcPath);
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
@@ -454,6 +451,7 @@ uint8_t GtBundleParser::ConvertResInfoToBundleInfo(const char *path, uint32_t la
     if (labelId != 0) {
         char *label = nullptr;
         if (GLOBAL_GetValueById(labelId, resPath, &label) != 0) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] global get label failed!");
             Free(label);
             AdapterFree(resPath);
             return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_LABEL_RES_ERROR;
@@ -483,6 +481,7 @@ bool GtBundleParser::ConvertIconResToBundleInfo(const char *resPath, uint32_t ic
 
     char *relativeIconPath = nullptr;
     if (GLOBAL_GetValueById(iconId, const_cast<char *>(resPath), &relativeIconPath) != 0) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] global get icon failed!");
         return false;
     }
     // set relativeIconDir
@@ -490,8 +489,7 @@ bool GtBundleParser::ConvertIconResToBundleInfo(const char *resPath, uint32_t ic
         return false;
     }
     char *pos = relativeIconPath + strlen(relativeIconPath);
-    for (; *pos != '/'; pos--) {
-    };
+    for (; *pos != '/'; pos--) {};
     *pos = '\0';
     char *bigIconPathComp[] = {
         bundleInfo->codePath, const_cast<char *>(ASSETS), relativeIconPath, const_cast<char *>(ICON_NAME)
@@ -607,11 +605,7 @@ uint8_t GtBundleParser::SaveBundleInfo(const BundleProfile &bundleProfile, const
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
-#ifdef __LITEOS_M__
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = (*bundleInfo)->bundleName};
-#else
-    AbilityInfo abilityInfo = {.bundleName = (*bundleInfo)->bundleName, .srcPath = jsPath};
-#endif
     // set abilityInfo
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(*bundleInfo, abilityInfo)) {
         AdapterFree(jsPath);
