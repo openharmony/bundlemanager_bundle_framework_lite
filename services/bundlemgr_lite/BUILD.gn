@@ -30,11 +30,17 @@ if (ohos_kernel_type == "liteos_m") {
       "src/gt_bundle_parser.cpp",
       "src/gt_extractor_util.cpp",
     ]
+
+    defines = ["JERRY_FOR_IAR_CONFIG"]
+
     deps = [
       "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
+      "//base/global/resmgr_lite/frameworks/resmgr_lite:global_resmgr",
       "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_static",
+	  "//build/lite/config/component/cJSON:cjson_static",
       "//foundation/arkui/ace_engine_lite/frameworks:ace_lite",
       "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
+      "//third_party/jerryscript/jerry-core:jerry-core_static"
     ]
 
     include_dirs = [

@@ -32,7 +32,7 @@ public:
 private:
     static uint32_t ReadInt(int32_t fp);
     static uint64_t ReadLong(int32_t fp);
-    static char *ReadString(int32_t fp, uint32_t len);
+    static unsigned char *ReadString(int32_t fp, uint32_t len);
     static bool HasCopiedData(const char *filePath, int32_t fp, uint64_t size);
 };
 } // namespace OHOS
