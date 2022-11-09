@@ -126,9 +126,13 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
 
     SetCurrentBundle(bundleInstallMsg_->bundleName);
     (void) ReportInstallCallback(OPERATION_DOING, 0, BMS_INSTALLATION_START, installerCallback);
+#ifdef BC_TRANS_ENABLE
     DisableServiceWdg();
+#endif
     ret = installer_->Install(path, installerCallback);
+#ifdef BC_TRANS_ENABLE
     EnableServiceWdg();
+#endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Install ret is %d", ret);
     if (ret == 0) {
         (void) ReportInstallCallback(ret, BUNDLE_INSTALL_OK, BMS_INSTALLATION_COMPLETED, installerCallback);
@@ -167,9 +171,13 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
 
     (void) ReportUninstallCallback(OPERATION_DOING, BUNDLE_UNINSTALL_DOING, innerBundleName,
         BMS_UNINSTALLATION_START, installerCallback);
+#ifdef BC_TRANS_ENABLE
     DisableServiceWdg();
+#endif
     uint8_t ret = installer_->Uninstall(innerBundleName);
+#ifdef BC_TRANS_ENABLE
     EnableServiceWdg();
+#endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Uninstall ret is %d", ret);
     if (ret == 0) {
         (void) ReportUninstallCallback(ret, BUNDLE_UNINSTALL_OK, innerBundleName,
@@ -302,7 +310,9 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
     }
 
     // scan system apps and third system apps
+#ifdef BC_TRANS_ENABLE
     DisableServiceWdg();
+#endif
     ScanSystemApp(uninstallRecord, &systemPathList_);
     if (uninstallRecord != nullptr) {
         cJSON_Delete(uninstallRecord);
@@ -310,7 +320,9 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
 
     // scan third apps
     ScanThirdApp(INSTALL_PATH, &systemPathList_);
+#ifdef BC_TRANS_ENABLE
     EnableServiceWdg();
+#endif
     for (auto node = systemPathList.Begin(); node != systemPathList.End(); node = node->next_) {
         ToBeInstalledApp *toBeInstalledApp = node->value_;
         if (!BundleUtil::IsFile(toBeInstalledApp->path) ||
@@ -766,6 +778,7 @@ void GtManagerService::UpdateBundleInfoList()
     }
 }
 
+#ifdef BC_TRANS_ENABLE
 void GtManagerService::TransformJsToBcWhenRestart(const char *codePath, const char *bundleName)
 {
     if (codePath == nullptr) {
@@ -876,6 +889,7 @@ void GtManagerService::TransformJsToBc(const char *codePath, const char *bundleJ
     }
     (void)BundleUtil::StoreJsonContentToFile(bundleJsonPath, installRecordObj);
 }
+#endif
 
 bool GtManagerService::CheckThirdSystemBundleHasUninstalled(const char *bundleName, const cJSON *object)
 {
