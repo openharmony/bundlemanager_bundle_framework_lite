@@ -19,6 +19,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "generate-bytecode.h"
 #ifdef __cplusplus
 }
 #endif
@@ -42,7 +43,7 @@ private:
     uint8_t PreCheckBundle(const char *path, int32_t &fp, SignatureInfo &signatureInfo, uint32_t &fileSize,
         uint8_t bundleStyle);
     uint8_t ProcessBundleInstall(const char *path, const char *randStr, InstallRecord &installRecord,
-        uint8_t bundleStyle, InstallerCallback installerCallback);
+        uint8_t bundleStyle, InstallerCallback installerCallback, bool &isUpdate);
     uint8_t HandleFileAndBackUpRecord(const InstallRecord &record, const char *tmpPath, const char *randStr,
         const char *dataPath, bool isUpdate);
     uint8_t UpdateBundleInfo(uint8_t bundleStyle, uint32_t labelId, uint32_t iconId, BundleInfo *bundleInfo,
