@@ -34,7 +34,7 @@ const uint8_t SHIFT_NUM = 8;
 uint32_t GtExtractorUtil::ReadInt(int32_t fp)
 {
     unsigned char buf[INT_LENGTH] = {0};
-    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {                                        
+    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {
         return UINT_MAX;
     }
 
