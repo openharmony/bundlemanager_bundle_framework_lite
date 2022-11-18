@@ -61,7 +61,6 @@ if (ohos_kernel_type == "liteos_m") {
       "//base/global/resource_management_lite/interfaces/inner_api/include",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
-      "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
       "//third_party/jerryscript/jerry-core",
       "//third_party/jerryscript/jerry-core/api",
       "//third_party/jerryscript/jerry-core/ecma/base",
