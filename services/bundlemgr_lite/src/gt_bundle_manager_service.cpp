@@ -492,6 +492,9 @@ void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalled
         return;
     }
     char *bundleName = reinterpret_cast<char *>(AdapterMalloc(MAX_BUNDLE_NAME_LEN + 1));
+    if (bundleName == nullptr) {
+        return;
+    }
     int32_t entLen = 0;
     while ((ent = readdir(dir)) != nullptr) {
         ++entLen;
