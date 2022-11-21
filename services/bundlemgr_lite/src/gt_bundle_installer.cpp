@@ -55,8 +55,8 @@ uint8_t GtBundleInstaller::PreCheckBundle(const char *path, int32_t &fp, Signatu
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_NOT_EXISTS;
     }
 
-    uint32_t size = BundleUtil::GetFileSize(path);
-    if (size == 0) {
+    fileSize = BundleUtil::GetFileSize(path);
+    if (fileSize == 0) {
         return ERR_APPEXECFWK_INSTALL_FAILED_BAD_FILE;
     }
 
@@ -92,8 +92,10 @@ uint8_t GtBundleInstaller::PreCheckBundle(const char *path, int32_t &fp, Signatu
     // check number of current installed third bundles whether is to MAX_THIRD_BUNDLE_NUMBER
     if (bundleStyle == THIRD_APP_FLAG) {
         uint32_t numOfBundles = GtManagerService::GetInstance().GetNumOfThirdBundles();
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] bundle num is %d", numOfBundles);
         if (GtManagerService::GetInstance().QueryBundleInfo(bundleName) == nullptr &&
             numOfBundles >= MAX_THIRD_BUNDLE_NUMBER) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] bundle quantity exceeds the limit!");
             UI_Free(bundleName);
             return ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_BUNDLE_NUMBER;
         }
@@ -196,12 +198,13 @@ uint8_t GtBundleInstaller::Install(const char *path, InstallerCallback installer
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
 
-    uint8_t errorCode = ProcessBundleInstall(path, randStr, installRecord, bundleStyle, installerCallback);
+    bool isUpdate = false;
+    uint8_t errorCode = ProcessBundleInstall(path, randStr, installRecord, bundleStyle, installerCallback, isUpdate);
     if (errorCode != ERR_OK) {
         return errorCode;
     }
-    (void) GtManagerService::GetInstance().ReportInstallCallback(OPERATION_DOING,
-        0, BMS_SIXTH_FINISHED_PROCESS, installerCallback);
+    (void) GtManagerService::GetInstance().ReportInstallCallback(OPERATION_DOING, 0, BMS_SIXTH_FINISHED_PROCESS,
+        installerCallback);
 
     // rename bundle.json
     if (!RenameJsonFile(installRecord.bundleName, randStr)) {
@@ -214,7 +217,7 @@ uint8_t GtBundleInstaller::Install(const char *path, InstallerCallback installer
         RecordThirdSystemBundle(installRecord.bundleName, THIRD_SYSTEM_BUNDLE_JSON);
     }
 
-    if (bundleStyle == THIRD_APP_FLAG) {
+    if (bundleStyle == THIRD_APP_FLAG && !isUpdate) {
         GtManagerService::GetInstance().AddNumOfThirdBundles();
     }
     // record app info event when install app
@@ -222,7 +225,7 @@ uint8_t GtBundleInstaller::Install(const char *path, InstallerCallback installer
 }
 
 uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *randStr, InstallRecord &installRecord,
-    uint8_t bundleStyle, InstallerCallback installerCallback)
+    uint8_t bundleStyle, InstallerCallback installerCallback, bool &isUpdate)
 {
     SignatureInfo signatureInfo;
     signatureInfo = {.bundleName = nullptr, .appId = nullptr, .restricPermission = nullptr, .restricNum = 0};
@@ -240,14 +243,6 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
     (void) GtManagerService::GetInstance().ReportInstallCallback(OPERATION_DOING,
         0, BMS_SECOND_FINISHED_PROCESS, installerCallback);
-#ifdef __LITEOS_M__
-    fp = open(path, O_RDONLY, S_IREAD);
-    if (fp < 0) {
-        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] process bundle install fp open fail");
-        errorCode = ERR_APPEXECFWK_INSTALL_FAILED_FILE_NOT_EXISTS;
-    }
-    CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
-#endif
     // parse HarmoyProfile.json, get permissions and bundleInfo
     errorCode = GtBundleParser::ParseHapProfile(fp, fileSize, permissions, bundleRes, &bundleInfo);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
@@ -257,13 +252,16 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     uint32_t iconId = (bundleRes.abilityRes != nullptr) ? bundleRes.abilityRes->iconId : 0;
     AdapterFree(bundleRes.abilityRes);
     // check signatureInfo
+#ifndef __LITEOS_M__
     errorCode = CheckProvisionInfoIsValid(signatureInfo, permissions, bundleInfo->bundleName);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
+#endif
     installRecord.codePath = bundleInfo->codePath;
     installRecord.bundleName = bundleInfo->bundleName;
-    installRecord.appId = signatureInfo.appId;
+    char innerAppId[] = "appId";
+    installRecord.appId = innerAppId;
     installRecord.versionCode = bundleInfo->versionCode;
-    bundleInfo->appId = Utils::Strdup(signatureInfo.appId);
+    bundleInfo->appId = Utils::Strdup(innerAppId);
     // check version when in update status
     errorCode = CheckVersionAndSignature(installRecord.bundleName, installRecord.appId, bundleInfo);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
@@ -290,7 +288,7 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     (void) GtManagerService::GetInstance().ReportInstallCallback(OPERATION_DOING, 0,
         BMS_FOURTH_FINISHED_PROCESS, installerCallback);
     // rename install path and record install infomation
-    bool isUpdate = GtManagerService::GetInstance().QueryBundleInfo(installRecord.bundleName) != nullptr;
+    isUpdate = GtManagerService::GetInstance().QueryBundleInfo(installRecord.bundleName) != nullptr;
     errorCode = HandleFileAndBackUpRecord(installRecord, tmpCodePath, randStr, bundleInfo->dataPath, isUpdate);
     AdapterFree(tmpCodePath);
     CHECK_PRO_ROLLBACK(errorCode, permissions, bundleInfo, signatureInfo, randStr);

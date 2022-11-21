@@ -152,8 +152,11 @@ bool BundleMsClient::RegisterInstallerCallback (InstallerCallback installerCallb
 
 uint8_t BundleMsClient::QueryAbilityInfo (const Want *want, AbilityInfo *abilityInfo) const
 {
+    if ((want == nullptr) || (abilityInfo == nullptr)) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
     if (!Initialize()) {
-        return -1;
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->QueryAbilityInfo(want, abilityInfo);
 }
@@ -164,7 +167,8 @@ uint8_t BundleMsClient::GetBundleInfo (const char *bundleName, int32_t flags, Bu
         return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
     }
     if (!Initialize()) {
-        return -1;
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Initialize is failed");
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->GetBundleInfo(bundleName, flags, bundleInfo);
 }
@@ -178,13 +182,17 @@ uint8_t BundleMsClient::GetBundleInfos (int32_t flags, BundleInfo **bundleInfos,
         return ERR_APPEXECFWK_QUERY_NO_INFOS;
     }
     if (!Initialize()) {
-        return -1;
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Initialize is failed");
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->GetBundleInfos(flags, bundleInfos, len);
 }
 
 bool BundleMsClient::GetInstallState (const char *bundleName, InstallState *installState, uint8_t *installProcess) const
 {
+    if ((bundleName == nullptr) || (installState == nullptr) || (installProcess == nullptr)) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
     if (!Initialize()) {
         return false;
     }
@@ -193,8 +201,11 @@ bool BundleMsClient::GetInstallState (const char *bundleName, InstallState *inst
 
 uint32_t BundleMsClient::GetBundleSize (const char *bundleName) const
 {
+    if (bundleName == nullptr) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
     if (!Initialize()) {
-        return -1;
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->GetBundleSize(bundleName);
 }
@@ -209,9 +220,42 @@ void BundleMsClient::UpdateBundleInfoList () const
 
 uint8_t BundleMsClient::GetBundleInfosNoReplication (const int flags, BundleInfo **bundleInfos, int32_t *len) const
 {
+    if ((bundleInfos == nullptr) || (len == nullptr)) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
     if (!Initialize()) {
-        return -1;
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->GetBundleInfosNoReplication(flags, bundleInfos, len);
+}
+
+PreAppList *BundleMsClient::InitPreAppInfo () const
+{
+    if (!Initialize()) {
+        return nullptr;
+    }
+    return bmsProxy_->InitPreAppInfo();
+}
+
+void BundleMsClient::InsertPreAppInfo (const char *filePath, PreAppList *list) const
+{
+    if ((filePath == nullptr) || (list == nullptr)) {
+        return;
+    }
+    if (!Initialize()) {
+        return;
+    }
+    bmsProxy_->InsertPreAppInfo(filePath, list);
+}
+
+void BundleMsClient::SetPreAppInfo(PreAppList *list) const
+{
+    if (list == nullptr) {
+        return;
+    }
+    if (!Initialize()) {
+        return;
+    }
+    bmsProxy_->SetPreAppInfo(list);
 }
 } //  namespace OHOS

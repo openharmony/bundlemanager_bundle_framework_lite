@@ -33,8 +33,8 @@ const uint8_t SHIFT_NUM = 8;
 
 uint32_t GtExtractorUtil::ReadInt(int32_t fp)
 {
-    char buf[INT_LENGTH] = {0};
-    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {
+    unsigned char buf[INT_LENGTH] = {0};
+    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {                                        
         return UINT_MAX;
     }
 
@@ -50,7 +50,7 @@ uint32_t GtExtractorUtil::ReadInt(int32_t fp)
 
 bool GtExtractorUtil::CheckMagicNumber(int32_t fp)
 {
-    char buf[MAGIC_NUMBER_LEN] = {0};
+    unsigned char buf[MAGIC_NUMBER_LEN] = {0};
     if (read(fp, buf, MAGIC_NUMBER_LEN) != MAGIC_NUMBER_LEN) {
         return false;
     }
@@ -62,7 +62,7 @@ bool GtExtractorUtil::CheckMagicNumber(int32_t fp)
 
 uint64_t GtExtractorUtil::ReadLong(int32_t fp)
 {
-    char buf[LONG_LENGTH] = {0};
+    unsigned char buf[LONG_LENGTH] = {0};
     if (read(fp, buf, LONG_LENGTH) != LONG_LENGTH) {
         return 0;
     }
@@ -77,9 +77,9 @@ uint64_t GtExtractorUtil::ReadLong(int32_t fp)
     return result;
 }
 
-char *GtExtractorUtil::ReadString(int32_t fp, uint32_t len)
+unsigned char *GtExtractorUtil::ReadString(int32_t fp, uint32_t len)
 {
-    char *buf = reinterpret_cast<char *>(UI_Malloc((len + 1) * sizeof(char)));
+    unsigned char *buf = reinterpret_cast<unsigned char *>(UI_Malloc((len + 1) * sizeof(unsigned char)));
     if (buf == nullptr) {
         return nullptr;
     }
@@ -108,7 +108,7 @@ uint8_t GtExtractorUtil::ExtractFileHeaderInfo(int32_t fp, char **bundleName)
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*bundleName = ReadString(fp, bundleNameLen)) == nullptr) {
+    if ((*bundleName = (char *)ReadString(fp, bundleNameLen)) == nullptr) {
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
     return ERR_OK;
@@ -136,7 +136,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, char **rel
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*fileName = ReadString(fp, nameLen)) == nullptr) {
+    if ((*fileName = (char *)ReadString(fp, nameLen)) == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read fileName fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
@@ -146,7 +146,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, char **rel
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read path Int fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     } else {
-        if ((*relativeFilePath = ReadString(fp, pathLen)) == nullptr) {
+        if ((*relativeFilePath = (char *)ReadString(fp, pathLen)) == nullptr) {
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read relativeFilePath fail");
             return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
         }
@@ -168,7 +168,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, uint32_t &
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*fileName = ReadString(fp, nameLen)) == nullptr) {
+    if ((*fileName = (char *)ReadString(fp, nameLen)) == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read fileName fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }

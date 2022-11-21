@@ -31,6 +31,7 @@
 #include "gt_bundle_parser.h"
 #include "gt_extractor_util.h"
 #include "jerryscript_adapter.h"
+#include "los_tick.h"
 #include "sys/stat.h"
 #include "unistd.h"
 #include "utils.h"
@@ -40,12 +41,9 @@ using namespace OHOS::ACELite;
 
 namespace OHOS {
 const uint8_t OPERATION_DOING = 200;
+const uint8_t BMS_INSTALLATION_START = 101;
 const uint8_t BMS_UNINSTALLATION_START = 104;
 const uint8_t BMS_INSTALLATION_COMPLETED = 100;
-
-#ifndef __LITEOS_M__
-const uint8_t BMS_INSTALLATION_START = 101;
-#endif
 
 GtManagerService::GtManagerService()
 {
@@ -55,6 +53,9 @@ GtManagerService::GtManagerService()
     bundleInstallMsg_ = nullptr;
     jsEngineVer_ = nullptr;
     installedThirdBundleNum_ = 0;
+    preAppList_ = nullptr;
+    updateFlag_ = false;
+    oldVersionCode_ = -1;
 }
 
 GtManagerService::~GtManagerService()
@@ -68,18 +69,15 @@ GtManagerService::~GtManagerService()
 bool GtManagerService::Install(const char *hapPath, const InstallParam *installParam,
     InstallerCallback installerCallback)
 {
-    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] install start");
     if (installer_ == nullptr) {
         installer_ = new GtBundleInstaller();
     }
     if (hapPath == nullptr) {
         return false;
     }
-#ifndef __LITEOS_M__
     if (installerCallback == nullptr) {
         return false;
     }
-#endif
     char *path = reinterpret_cast<char *>(AdapterMalloc(strlen(hapPath) + 1));
     if (path == nullptr) {
         return false;
@@ -89,7 +87,6 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
         return false;
     }
 
-#ifndef __LITEOS_M__
     // delete resource temp dir first
     (void) BundleUtil::RemoveDir(TMP_RESOURCE_DIR);
     // create new bundleInstallMsg
@@ -108,7 +105,8 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
         &(bundleInstallMsg_->label), &(bundleInstallMsg_->smallIconPath),
         &(bundleInstallMsg_->bigIconPath));
     if (ret != 0) {
-        char *name = strchr(path, '/');
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Install extract install msg failed, ret is %{public}d", ret);
+        char *name = strrchr(path, '/');
         bundleInstallMsg_->bundleName = Utils::Strdup(name + 1);
         (void) ReportInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED, installerCallback);
         ClearSystemBundleInstallMsg();
@@ -117,11 +115,25 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
         return false;
     }
 
+    updateFlag_ = false;
+    oldVersionCode_ = -1;
+    BundleInfo *installedInfo = bundleMap_->Get(bundleInstallMsg_->bundleName);
+    if (installedInfo != nullptr) {
+        updateFlag_ = true;
+        oldVersionCode_ = installedInfo->versionCode;
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] App is in the updated state");
+    }
+
     SetCurrentBundle(bundleInstallMsg_->bundleName);
     (void) ReportInstallCallback(OPERATION_DOING, 0, BMS_INSTALLATION_START, installerCallback);
+#ifdef BC_TRANS_ENABLE
     DisableServiceWdg();
+#endif
     ret = installer_->Install(path, installerCallback);
+#ifdef BC_TRANS_ENABLE
     EnableServiceWdg();
+#endif
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Install ret is %d", ret);
     if (ret == 0) {
         (void) ReportInstallCallback(ret, BUNDLE_INSTALL_OK, BMS_INSTALLATION_COMPLETED, installerCallback);
     } else {
@@ -129,10 +141,6 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
     }
     SetCurrentBundle(nullptr);
     ClearSystemBundleInstallMsg();
-#else
-    uint8_t ret = installer_->Install(path, installerCallback);
-    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] install ret is %d", ret);
-#endif
     (void) BundleUtil::RemoveDir(TMP_RESOURCE_DIR);
     AdapterFree(path);
     return true;
@@ -148,11 +156,9 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Parsed bundleName to be uninstalled is null");
         return false;
     }
-#ifndef __LITEOS_M__
     if (installerCallback == nullptr) {
         return false;
     }
-#endif
     char *innerBundleName = reinterpret_cast<char *>(AdapterMalloc(strlen(bundleName) + 1));
     if (innerBundleName == nullptr) {
         return false;
@@ -165,8 +171,14 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
 
     (void) ReportUninstallCallback(OPERATION_DOING, BUNDLE_UNINSTALL_DOING, innerBundleName,
         BMS_UNINSTALLATION_START, installerCallback);
+#ifdef BC_TRANS_ENABLE
+    DisableServiceWdg();
+#endif
     uint8_t ret = installer_->Uninstall(innerBundleName);
-    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] uninstall ret is %d", ret);
+#ifdef BC_TRANS_ENABLE
+    EnableServiceWdg();
+#endif
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Uninstall ret is %d", ret);
     if (ret == 0) {
         (void) ReportUninstallCallback(ret, BUNDLE_UNINSTALL_OK, innerBundleName,
             BMS_INSTALLATION_COMPLETED, installerCallback);
@@ -187,9 +199,12 @@ bool GtManagerService::GetInstallState(const char *bundleName, InstallState *ins
     }
     BundleInfo *installedInfo = bundleMap_->Get(bundleName);
     if (installedInfo != nullptr) {
-        *installState = BUNDLE_INSTALL_OK;
-        *installProcess = BMS_INSTALLATION_COMPLETED;
-        return true;
+        bool isUpdateSuccess = updateFlag_ && oldVersionCode_ < installedInfo->versionCode;
+        if (!updateFlag_ || isUpdateSuccess) {
+            *installState = BUNDLE_INSTALL_OK;
+            *installProcess = BMS_INSTALLATION_COMPLETED;
+            return true;
+        }
     }
     if (bundleInstallMsg_ == nullptr || bundleInstallMsg_->bundleName == nullptr) {
         *installState = BUNDLE_INSTALL_FAIL;
@@ -272,34 +287,52 @@ uint8_t GtManagerService::GetBundleInfosNoReplication(const int flags, BundleInf
 
 bool GtManagerService::RegisterInstallerCallback(InstallerCallback installerCallback)
 {
-#ifndef __LITEOS_M__
     if (installerCallback == nullptr) {
         return false;
     }
-#endif
     InstallPreBundle(systemPathList_, installerCallback);
     return true;
 }
 
 void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList, InstallerCallback installerCallback)
 {
-#ifndef __LITEOS_M__
     if (!BundleUtil::IsDir(JSON_PATH_NO_SLASH_END)) {
         BundleUtil::MkDirs(JSON_PATH_NO_SLASH_END);
         InstallAllSystemBundle(installerCallback);
         RemoveSystemAppPathList(&systemPathList);
         return;
     }
+    // get third system bundle uninstall record
+    cJSON *uninstallRecord = BundleUtil::GetJsonStream(UNINSTALL_THIRD_SYSTEM_BUNDLE_JSON);
+    if (uninstallRecord == nullptr) {
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] InstallPreBundle uninstallRecord is nullptr!");
+        (void) unlink(UNINSTALL_THIRD_SYSTEM_BUNDLE_JSON);
+    }
+
+    // scan system apps and third system apps
+#ifdef BC_TRANS_ENABLE
+    DisableServiceWdg();
+#endif
+    ScanSystemApp(uninstallRecord, &systemPathList_);
+    if (uninstallRecord != nullptr) {
+        cJSON_Delete(uninstallRecord);
+    }
+
+    // scan third apps
+    ScanThirdApp(INSTALL_PATH, &systemPathList_);
+#ifdef BC_TRANS_ENABLE
+    EnableServiceWdg();
 #endif
     for (auto node = systemPathList.Begin(); node != systemPathList.End(); node = node->next_) {
         ToBeInstalledApp *toBeInstalledApp = node->value_;
+        if (!BundleUtil::IsFile(toBeInstalledApp->path) ||
+            !BundleUtil::EndWith(toBeInstalledApp->path, INSTALL_FILE_SUFFIX)) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Pre install file path is invalid");
+            continue;
+        }
         if (toBeInstalledApp->isUpdated) {
             (void) ReloadBundleInfo(toBeInstalledApp->installedPath, toBeInstalledApp->appId,
                 toBeInstalledApp->isSystemApp);
-        }
-        if (!BundleUtil::IsFile(toBeInstalledApp->path) ||
-            !BundleUtil::EndWith(toBeInstalledApp->path, INSTALL_FILE_SUFFIX)) {
-            return;
         }
         (void) Install(toBeInstalledApp->path, nullptr, installerCallback);
     }
@@ -308,31 +341,28 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
 
 void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallback)
 {
-    AppInfoList *list = GtManagerService::APP_InitAllAppInfo();
+    PreAppList *list = preAppList_;
     if (list == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] InstallAllSystemBundle InitAllAppInfo fail, list is nullptr");
         return;
     }
 
-    AppInfoList *currentNode = nullptr;
-    AppInfoList *nextNode = nullptr;
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, AppInfoList, appDoubleList) {
-        if (currentNode == nullptr) {
-            return;
-        }
-        if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
-            (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
+    PreAppList *currentNode = nullptr;
+    PreAppList *nextNode = nullptr;
+    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+        if ((strcmp(((PreAppList *)currentNode)->filePath, ".") == 0) ||
+            (strcmp(((PreAppList *)currentNode)->filePath, "..") == 0)) {
             continue;
         }
 
-        if (!BundleUtil::IsFile(((AppInfoList *)currentNode)->filePath) ||
-            !BundleUtil::EndWith(((AppInfoList *)currentNode)->filePath, INSTALL_FILE_SUFFIX)) {
-            GtManagerService::APP_FreeAllAppInfo(list);
+        if (!BundleUtil::IsFile(((PreAppList *)currentNode)->filePath) ||
+            !BundleUtil::EndWith(((PreAppList *)currentNode)->filePath, INSTALL_FILE_SUFFIX)) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Install all system bundle file path is invalid");
             return;
         }
-        (void) Install(((AppInfoList *)currentNode)->filePath, nullptr, installerCallback);
+        (void) Install(((PreAppList *)currentNode)->filePath, nullptr, installerCallback);
     }
-    GtManagerService::APP_FreeAllAppInfo(list);
+    GtManagerService::FreePreAppInfo(list);
 }
 
 void GtManagerService::ClearSystemBundleInstallMsg()
@@ -375,35 +405,7 @@ void GtManagerService::ScanPackages()
         HILOG_WARN(HILOG_MODULE_AAFWK, "[BMS] get jsEngine version fail when restart!");
     }
 #endif
-
-#ifdef __LITEOS_M__
-    if (!BundleUtil::MkDirs(INSTALL_PATH) || !BundleUtil::MkDirs(DATA_PATH) ||
-        !BundleUtil::MkDirs(JSON_PATH)) {
-        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] ScanPackages mkdirs failed!");
-    }
-    if (!BundleUtil::IsDir(SYSTEM_BUNDLE_PATH)) {
-        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] system bundle path is not exist, unable to pre install!");
-    }
-#endif
-    // get third system bundle uninstall record
-    cJSON *uninstallRecord = BundleUtil::GetJsonStream(UNINSTALL_THIRD_SYSTEM_BUNDLE_JSON);
-    if (uninstallRecord == nullptr) {
-        (void) unlink(UNINSTALL_THIRD_SYSTEM_BUNDLE_JSON);
-    }
-
-    // scan system apps and third system apps
-    ScanSystemApp(uninstallRecord, &systemPathList_);
-    if (uninstallRecord != nullptr) {
-        cJSON_Delete(uninstallRecord);
-    }
-
-    // scan third apps
-    ScanThirdApp(INSTALL_PATH, &systemPathList_);
-
-#ifdef __LITEOS_M__
-    InstallerCallback installerCallback = nullptr;
-    RegisterInstallerCallback(installerCallback);
-#endif
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] get jsEngine version success!");
 }
 
 void GtManagerService::RemoveSystemAppPathList(List<ToBeInstalledApp *> *systemPathList)
@@ -425,7 +427,7 @@ void GtManagerService::RemoveSystemAppPathList(List<ToBeInstalledApp *> *systemP
 
 void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInstalledApp *> *systemPathList)
 {
-    AppInfoList *list = GtManagerService::APP_InitAllAppInfo();
+    PreAppList *list = preAppList_;
     if (list == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] ScanSystemApp InitAllAppInfo fail, list is nullptr");
         return;
@@ -434,29 +436,30 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
     uint8_t scanFlag = 0;
     char *bundleName = nullptr;
     int32_t versionCode = -1;
-    AppInfoList *currentNode = nullptr;
-    AppInfoList *nextNode = nullptr;
+    PreAppList *currentNode = nullptr;
+    PreAppList *nextNode = nullptr;
 
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, AppInfoList, appDoubleList) {
+    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
         if (currentNode == nullptr) {
             return;
         }
-        if ((strcmp(((AppInfoList *)currentNode)->filePath, ".") == 0) ||
-            (strcmp(((AppInfoList *)currentNode)->filePath, "..") == 0)) {
+        if ((strcmp(((PreAppList *)currentNode)->filePath, ".") == 0) ||
+            (strcmp(((PreAppList *)currentNode)->filePath, "..") == 0)) {
             continue;
         }
 
-        if (BundleUtil::StartWith(((AppInfoList *)currentNode)->filePath, SYSTEM_BUNDLE_PATH)) {
+        if (BundleUtil::StartWith(((PreAppList *)currentNode)->filePath, SYSTEM_BUNDLE_PATH)) {
             scanFlag = SYSTEM_APP_FLAG;
-        } else if (BundleUtil::StartWith(((AppInfoList *)currentNode)->filePath, THIRD_SYSTEM_BUNDLE_PATH)) {
+        } else if (BundleUtil::StartWith(((PreAppList *)currentNode)->filePath, THIRD_SYSTEM_BUNDLE_PATH)) {
             scanFlag = THIRD_SYSTEM_APP_FLAG;
         } else {
             continue; // skip third app
         }
 
         // scan system app
-        bool res = CheckSystemBundleIsValid(((AppInfoList *)currentNode)->filePath, &bundleName, versionCode);
+        bool res = CheckSystemBundleIsValid(((PreAppList *)currentNode)->filePath, &bundleName, versionCode);
         if (!res) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] ScanSystemApp CheckSystemBundleIsValid failed!");
             APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_INVALID_SYSTEM_APP);
             AdapterFree(bundleName);
             continue;
@@ -469,11 +472,11 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
             continue;
         }
 
-        ReloadEntireBundleInfo(((AppInfoList *)currentNode)->filePath, bundleName,
+        ReloadEntireBundleInfo(((PreAppList *)currentNode)->filePath, bundleName,
             systemPathList, versionCode, scanFlag);
         AdapterFree(bundleName);
     }
-    GtManagerService::APP_FreeAllAppInfo(list);
+    GtManagerService::FreePreAppInfo(list);
 }
 
 void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalledApp *> *systemPathList)
@@ -488,19 +491,33 @@ void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalled
     if (dir == nullptr) {
         return;
     }
+    char *bundleName = reinterpret_cast<char *>(AdapterMalloc(MAX_BUNDLE_NAME_LEN + 1));
+    int32_t entLen = 0;
     while ((ent = readdir(dir)) != nullptr) {
-        if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..")) == 0) {
+        ++entLen;
+        if (memset_s(bundleName, MAX_BUNDLE_NAME_LEN + 1, 0, MAX_BUNDLE_NAME_LEN + 1) != EOK) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] memset fail when initialize bundle name!");
+            break;
+        }
+
+        if (strcpy_s(bundleName, MAX_BUNDLE_NAME_LEN + 1, ent->d_name) != 0) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] failed to copy bundle name!");
+            break;
+        }
+
+        if ((strcmp(bundleName, ".") == 0) || (strcmp(bundleName, "..")) == 0) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] strcmp fail when reload third app!");
             continue;
         }
 
-        int32_t len = strlen(appDir) + 1 + strlen(ent->d_name) + 1;
+        int32_t len = strlen(appDir) + 1 + strlen(bundleName) + 1;
         char *appPath = reinterpret_cast<char *>(UI_Malloc(len));
         if (appPath == nullptr) {
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] malloc fail when reload third app!");
             break;
         }
 
-        if (sprintf_s(appPath, len, "%s/%s", appDir, ent->d_name) < 0) {
+        if (sprintf_s(appPath, len, "%s/%s", appDir, bundleName) < 0) {
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] strcat fail when reload third app!");
             UI_Free(appPath);
             break;
@@ -513,20 +530,24 @@ void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalled
         }
 
         if (IsSystemBundleInstalledPath(appPath, systemPathList)) {
-            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] app path is not third bundle path!");
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] app path is not third bundle path!");
             UI_Free(appPath);
             continue;
         }
 
         if (installedThirdBundleNum_ >= MAX_THIRD_BUNDLE_NUMBER) {
-            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] third bundle reload number is to MAX_THIRD_BUNDLE_NUMBER!");
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] third bundle reload number is %d!",
+                installedThirdBundleNum_);
             UI_Free(appPath);
             continue;
         }
 
-        ReloadEntireBundleInfo(appPath, ent->d_name, nullptr, -1, THIRD_APP_FLAG);
+        ReloadEntireBundleInfo(appPath, bundleName, nullptr, -1, THIRD_APP_FLAG);
         UI_Free(appPath);
     }
+
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] third app number is %{public}d", entLen);
+    AdapterFree(bundleName);
     closedir(dir);
 }
 
@@ -575,6 +596,7 @@ void GtManagerService::ReloadEntireBundleInfo(const char *appPath, const char *b
     int32_t oldVersionCode = -1;
 
     if (appPath == nullptr || bundleName == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] ReloadEntireBundleInfo app path or bundle name is nullptr!");
         APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_UNKNOWN_BUNDLE_INFO);
         return;
     }
@@ -601,6 +623,7 @@ void GtManagerService::ReloadEntireBundleInfo(const char *appPath, const char *b
         }
     } else {
         if (!res && !BundleUtil::CheckBundleJsonIsValid(bundleName, &codePath, &appId, oldVersionCode)) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] ReloadEntireBundleInfo CheckBundleJsonIsValid failed!");
             RecordAbiityInfoEvt(bundleName);
             APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_PARSE_JSON_FALIED);
             AdapterFree(appId);
@@ -677,7 +700,6 @@ bool GtManagerService::ReloadBundleInfo(const char *profileDir, const char *appI
     AdapterFree(bundleRes);
     APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_PARSE_PROFILE_FALIED);
     HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] reload bundle info fail!, isSystemApp is %d", isSystemApp);
-    BundleUtil::RemoveDir(profileDir);
     return false;
 }
 
@@ -778,6 +800,13 @@ void GtManagerService::TransformJsToBcWhenRestart(const char *codePath, const ch
         return;
     }
 
+    if (jsEngineVer_ == nullptr) {
+        cJSON_Delete(installRecordJson);
+        AdapterFree(bundleJsonPath);
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] TransformJsToBcWhenRestart jsEngineVer_ is nullptr!");
+        return;
+    }
+
     cJSON *jsEngineVerObj = cJSON_CreateString(jsEngineVer_);
     if (jsEngineVerObj == nullptr) {
         cJSON_Delete(installRecordJson);
@@ -830,9 +859,7 @@ void GtManagerService::TransformJsToBc(const char *codePath, const char *bundleJ
         return;
     }
 
-    DisableServiceWdg();
     EXECRES result = walk_directory(jsPath);
-    EnableServiceWdg();
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] transform js to bc, result is %d", result);
     if (result != EXCE_ACE_JERRY_EXEC_OK) {
         result = walk_del_bytecode(jsPath);
@@ -977,26 +1004,23 @@ int32_t GtManagerService::ReportUninstallCallback(uint8_t errCode, uint8_t insta
     return 0;
 }
 
-AppInfoList *GtManagerService::APP_InitAllAppInfo()
+PreAppList *GtManagerService::InitPreAppInfo()
 {
-    AppInfoList *list = (AppInfoList *)AdapterMalloc(sizeof(AppInfoList));
+    PreAppList *list = (PreAppList *)AdapterMalloc(sizeof(PreAppList));
     if (list == nullptr) {
         return nullptr;
     }
 
-    if (memset_s(list, sizeof(AppInfoList), 0, sizeof(AppInfoList)) != EOK) {
+    if (memset_s(list, sizeof(PreAppList), 0, sizeof(PreAppList)) != EOK) {
         AdapterFree(list);
         return nullptr;
     }
 
     LOS_ListInit(&list->appDoubleList);
-
-    APP_QueryAppInfo(SYSTEM_BUNDLE_PATH, list);
-    APP_QueryAppInfo(THIRD_SYSTEM_BUNDLE_PATH, list);
     return list;
 }
 
-void GtManagerService::APP_QueryAppInfo(const char *appDir, AppInfoList *list)
+void GtManagerService::QueryPreAppInfo(const char *appDir, PreAppList *list)
 {
     struct dirent *ent = nullptr;
     if (appDir == nullptr) {
@@ -1041,25 +1065,25 @@ void GtManagerService::APP_QueryAppInfo(const char *appDir, AppInfoList *list)
             continue;
         }
 
-        APP_InsertAppInfo(appPath, (AppInfoList *)&list->appDoubleList);
+        InsertPreAppInfo(appPath, (PreAppList *)&list->appDoubleList);
         AdapterFree(appPath);
     }
-    closedir(dir);
     AdapterFree(fileName);
+    closedir(dir);
 }
 
-void GtManagerService::APP_InsertAppInfo(char *filePath, AppInfoList *list)
+void GtManagerService::InsertPreAppInfo(const char *filePath, PreAppList *list)
 {
     if ((filePath == nullptr) || (list == nullptr)) {
         return;
     }
 
-    AppInfoList *app = (AppInfoList *)AdapterMalloc(sizeof(AppInfoList));
+    PreAppList *app = (PreAppList *)AdapterMalloc(sizeof(PreAppList));
     if (app == nullptr) {
         return;
     }
 
-    if (memset_s(app, sizeof(AppInfoList), 0, sizeof(AppInfoList)) != 0) {
+    if (memset_s(app, sizeof(PreAppList), 0, sizeof(PreAppList)) != 0) {
         AdapterFree(app);
         return;
     }
@@ -1073,15 +1097,24 @@ void GtManagerService::APP_InsertAppInfo(char *filePath, AppInfoList *list)
     return;
 }
 
-void GtManagerService::APP_FreeAllAppInfo(AppInfoList *list)
+void GtManagerService::SetPreAppInfo(PreAppList *list)
+{
+    if (list == nullptr) {
+        return;
+    }
+    preAppList_ = list;
+    return;
+}
+
+void GtManagerService::FreePreAppInfo(const PreAppList *list)
 {
     if (list == nullptr) {
         return;
     }
 
-    AppInfoList *currentNode = nullptr;
-    AppInfoList *nextNode = nullptr;
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, AppInfoList, appDoubleList) {
+    PreAppList *currentNode = nullptr;
+    PreAppList *nextNode = nullptr;
+    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
         if (currentNode != nullptr) {
             LOS_ListDelete(&(currentNode->appDoubleList));
             AdapterFree(currentNode);
