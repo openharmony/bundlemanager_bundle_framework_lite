@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/lite/config/component/lite_component.gni")
+import("//build/lite/config/subsystem/aafwk/config.gni")
 
 config("bundle_config") {
   defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
@@ -32,6 +33,9 @@ if (ohos_kernel_type == "liteos_m") {
     ]
 
     defines = [ "JERRY_FOR_IAR_CONFIG" ]
+    if (enable_ohos_appexecfwk_feature_ability == true) {
+      defines += ["_MINI_BMS_"]
+    }
 
     deps = [
       "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
