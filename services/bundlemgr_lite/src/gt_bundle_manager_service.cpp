@@ -126,11 +126,11 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
 
     SetCurrentBundle(bundleInstallMsg_->bundleName);
     (void) ReportInstallCallback(OPERATION_DOING, 0, BMS_INSTALLATION_START, installerCallback);
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     DisableServiceWdg();
 #endif
     ret = installer_->Install(path, installerCallback);
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     EnableServiceWdg();
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Install ret is %d", ret);
@@ -171,11 +171,11 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
 
     (void) ReportUninstallCallback(OPERATION_DOING, BUNDLE_UNINSTALL_DOING, innerBundleName,
         BMS_UNINSTALLATION_START, installerCallback);
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     DisableServiceWdg();
 #endif
     uint8_t ret = installer_->Uninstall(innerBundleName);
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     EnableServiceWdg();
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Uninstall ret is %d", ret);
@@ -310,7 +310,7 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
     }
 
     // scan system apps and third system apps
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     DisableServiceWdg();
 #endif
     ScanSystemApp(uninstallRecord, &systemPathList_);
@@ -320,7 +320,7 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
 
     // scan third apps
     ScanThirdApp(INSTALL_PATH, &systemPathList_);
-#ifdef BC_TRANS_ENABLE
+#ifdef _MINI_BMS_
     EnableServiceWdg();
 #endif
     for (auto node = systemPathList.Begin(); node != systemPathList.End(); node = node->next_) {
@@ -350,6 +350,9 @@ void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallbac
     PreAppList *currentNode = nullptr;
     PreAppList *nextNode = nullptr;
     LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+        if (currentNode == nullptr) {
+            return;
+        }
         if ((strcmp(((PreAppList *)currentNode)->filePath, ".") == 0) ||
             (strcmp(((PreAppList *)currentNode)->filePath, "..") == 0)) {
             continue;
@@ -492,6 +495,9 @@ void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalled
         return;
     }
     char *bundleName = reinterpret_cast<char *>(AdapterMalloc(MAX_BUNDLE_NAME_LEN + 1));
+    if (bundleName == nullptr) {
+        return;
+    }
     int32_t entLen = 0;
     while ((ent = readdir(dir)) != nullptr) {
         ++entLen;

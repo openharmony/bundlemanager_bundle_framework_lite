@@ -107,7 +107,7 @@ uint8_t GtBundleInstaller::PreCheckBundle(const char *path, int32_t &fp, Signatu
 uint8_t GtBundleInstaller::VerifySignature(const char *path, SignatureInfo &signatureInfo, uint32_t &fileSize,
     uint8_t bundleStyle)
 {
-#ifndef __LITEOS_M__
+#ifdef _MINI_BMS_
     VerifyResult verifyResult;
     // verify signature
     (void) APPVERI_SetDebugMode(true);
@@ -252,16 +252,21 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     uint32_t iconId = (bundleRes.abilityRes != nullptr) ? bundleRes.abilityRes->iconId : 0;
     AdapterFree(bundleRes.abilityRes);
     // check signatureInfo
-#ifndef __LITEOS_M__
+#ifdef _MINI_BMS_
     errorCode = CheckProvisionInfoIsValid(signatureInfo, permissions, bundleInfo->bundleName);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
 #endif
     installRecord.codePath = bundleInfo->codePath;
     installRecord.bundleName = bundleInfo->bundleName;
+#ifdef _MINI_BMS_
+    installRecord.appId = signatureInfo.appId;
+    bundleInfo->appId = Utils::Strdup(signatureInfo.appId);
+#else
     char innerAppId[] = "appId";
     installRecord.appId = innerAppId;
-    installRecord.versionCode = bundleInfo->versionCode;
     bundleInfo->appId = Utils::Strdup(innerAppId);
+#endif
+    installRecord.versionCode = bundleInfo->versionCode;
     // check version when in update status
     errorCode = CheckVersionAndSignature(installRecord.bundleName, installRecord.appId, bundleInfo);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
@@ -586,7 +591,7 @@ uint8_t GtBundleInstaller::Uninstall(const char *bundleName)
     if (sprintf_s(bundleJsonPath, PATH_LENGTH, "%s%s%s", JSON_PATH, bundleName, JSON_SUFFIX) < 0) {
         return ERR_APPEXECFWK_UNINSTALL_FAILED_INTERNAL_ERROR;
     }
-#ifndef __LITEOS_M__
+#ifdef _MINI_BMS_
     if (DeletePermissions(const_cast<char *>(bundleName)) < 0) {
         return ERR_APPEXECFWK_UNINSTALL_FAILED_DELETE_PERMISSIONS_ERROR;
     }
@@ -743,7 +748,7 @@ uint8_t GtBundleInstaller::StorePermissions(const char *bundleName, PermissionTr
     bool isUpdate)
 {
     if (permNum == 0) {
-#ifndef __LITEOS_M__
+#ifdef _MINI_BMS_
         if (isUpdate) {
             int32_t ret = DeletePermissions(bundleName);
             HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] delete permissions, result is %d", ret);
@@ -759,7 +764,7 @@ uint8_t GtBundleInstaller::StorePermissions(const char *bundleName, PermissionTr
     if (!BundleUtil::IsDir(PERMISSIONS_PATH)) {
         BundleUtil::MkDirs(PERMISSIONS_PATH);
     }
-#ifndef __LITEOS_M__
+#ifdef _MINI_BMS_
     if (SaveOrUpdatePermissions(const_cast<char *>(bundleName), permissions, permNum,
         static_cast<IsUpdate>(isUpdate)) != 0) {
             return ERR_APPEXECFWK_INSTALL_FAILED_STORE_PERMISSIONS_ERROR;
