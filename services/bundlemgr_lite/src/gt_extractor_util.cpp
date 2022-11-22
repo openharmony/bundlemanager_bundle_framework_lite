@@ -34,7 +34,7 @@ const uint8_t SHIFT_NUM = 8;
 uint32_t GtExtractorUtil::ReadInt(int32_t fp)
 {
     unsigned char buf[INT_LENGTH] = {0};
-    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {                                        
+    if (read(fp, buf, INT_LENGTH) != INT_LENGTH) {
         return UINT_MAX;
     }
 
@@ -108,7 +108,7 @@ uint8_t GtExtractorUtil::ExtractFileHeaderInfo(int32_t fp, char **bundleName)
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*bundleName = (char *)ReadString(fp, bundleNameLen)) == nullptr) {
+    if ((*bundleName = reinterpret_cast<char *>(ReadString(fp, bundleNameLen))) == nullptr) {
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
     return ERR_OK;
@@ -136,7 +136,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, char **rel
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*fileName = (char *)ReadString(fp, nameLen)) == nullptr) {
+    if ((*fileName = reinterpret_cast<char *>(ReadString(fp, nameLen))) == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read fileName fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
@@ -146,7 +146,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, char **rel
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read path Int fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     } else {
-        if ((*relativeFilePath = (char *)ReadString(fp, pathLen)) == nullptr) {
+        if ((*relativeFilePath = reinterpret_cast<char *>(ReadString(fp, pathLen))) == nullptr) {
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read relativeFilePath fail");
             return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
         }
@@ -168,7 +168,7 @@ uint8_t GtExtractorUtil::ExtractFileAttr(int32_t fp, char **fileName, uint32_t &
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }
 
-    if ((*fileName = (char *)ReadString(fp, nameLen)) == nullptr) {
+    if ((*fileName = reinterpret_cast<char *>(ReadString(fp, nameLen))) == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Read fileName fail");
         return ERR_APPEXECFWK_INSTALL_FAILED_FILE_DATA_INVALID;
     }

@@ -350,6 +350,9 @@ void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallbac
     PreAppList *currentNode = nullptr;
     PreAppList *nextNode = nullptr;
     LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+        if (currentNode == nullptr) {
+            return;
+        }
         if ((strcmp(((PreAppList *)currentNode)->filePath, ".") == 0) ||
             (strcmp(((PreAppList *)currentNode)->filePath, "..") == 0)) {
             continue;
@@ -492,6 +495,10 @@ void GtManagerService::ScanThirdApp(const char *appDir, const List<ToBeInstalled
         return;
     }
     char *bundleName = reinterpret_cast<char *>(AdapterMalloc(MAX_BUNDLE_NAME_LEN + 1));
+    if (bundleName == nullptr) {
+        closedir(dir);
+        return;
+    }
     int32_t entLen = 0;
     while ((ent = readdir(dir)) != nullptr) {
         ++entLen;
