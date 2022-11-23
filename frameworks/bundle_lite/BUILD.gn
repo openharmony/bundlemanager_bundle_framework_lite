@@ -61,7 +61,6 @@ lite_library("bundle") {
       "${aafwk_lite_path}/interfaces/kits/want_lite",
       "${aafwk_lite_path}/interfaces/kits/ability_lite/slite",
       "${aafwk_lite_path}/interfaces/inner_api/abilitymgr_lite",
-      "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
       "//third_party/bounds_checking_function/include",
