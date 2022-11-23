@@ -17,6 +17,10 @@ config("bundle_config") {
   cflags_cc = [ "-std=c++14" ]
 }
 
+declare_args() {
+  enable_ohos_bundle_manager_service = false
+}
+
 if (ohos_kernel_type == "liteos_m") {
   static_library("bundlems") {
     sources = [
@@ -32,6 +36,9 @@ if (ohos_kernel_type == "liteos_m") {
     ]
 
     defines = ["JERRY_FOR_IAR_CONFIG"]
+    if (enable_ohos_bundle_manager_service == true) {
+      defines += [ "_MINI_BMS_" ]
+    }
 
     deps = [
       "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
@@ -61,7 +68,6 @@ if (ohos_kernel_type == "liteos_m") {
       "//base/global/resource_management_lite/interfaces/inner_api/include",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
       "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
-      "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
       "//third_party/jerryscript/jerry-core",
       "//third_party/jerryscript/jerry-core/api",
       "//third_party/jerryscript/jerry-core/ecma/base",
