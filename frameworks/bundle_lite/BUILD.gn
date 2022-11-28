@@ -55,6 +55,7 @@ lite_library("bundle") {
       "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
       "${appexecfwk_lite_path}/utils/bundle_lite",
       "${appexecfwk_lite_path}/frameworks/bundle_lite/include",
+      "//base/hiviewdfx/hilog_lite/interfaces/native/kits/hilog_lite",
       "//base/security/permission_lite/interfaces/kits",
       "//base/security/permission_lite/services/pms/include",
       "${aafwk_lite_path}/frameworks/want_lite/include",
