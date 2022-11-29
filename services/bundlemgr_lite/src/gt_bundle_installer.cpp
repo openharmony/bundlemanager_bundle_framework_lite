@@ -590,7 +590,7 @@ uint8_t GtBundleInstaller::Uninstall(const char *bundleName)
     if (sprintf_s(bundleJsonPath, PATH_LENGTH, "%s%s%s", JSON_PATH, bundleName, JSON_SUFFIX) < 0) {
         return ERR_APPEXECFWK_UNINSTALL_FAILED_INTERNAL_ERROR;
     }
-#ifdef _MINI_BMS_
+#ifdef _MINI_BMS_PERMISSION_
     if (DeletePermissions(const_cast<char *>(bundleName)) < 0) {
         return ERR_APPEXECFWK_UNINSTALL_FAILED_DELETE_PERMISSIONS_ERROR;
     }
@@ -747,7 +747,7 @@ uint8_t GtBundleInstaller::StorePermissions(const char *bundleName, PermissionTr
     bool isUpdate)
 {
     if (permNum == 0) {
-#ifdef _MINI_BMS_
+#ifdef _MINI_BMS_PERMISSION_
         if (isUpdate) {
             int32_t ret = DeletePermissions(bundleName);
             HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] delete permissions, result is %d", ret);
@@ -763,7 +763,7 @@ uint8_t GtBundleInstaller::StorePermissions(const char *bundleName, PermissionTr
     if (!BundleUtil::IsDir(PERMISSIONS_PATH)) {
         BundleUtil::MkDirs(PERMISSIONS_PATH);
     }
-#ifdef _MINI_BMS_
+#ifdef _MINI_BMS_PERMISSION_
     if (SaveOrUpdatePermissions(const_cast<char *>(bundleName), permissions, permNum,
         static_cast<IsUpdate>(isUpdate)) != 0) {
             return ERR_APPEXECFWK_INSTALL_FAILED_STORE_PERMISSIONS_ERROR;
