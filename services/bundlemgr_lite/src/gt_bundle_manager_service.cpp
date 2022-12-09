@@ -290,6 +290,9 @@ bool GtManagerService::RegisterInstallerCallback(InstallerCallback installerCall
     if (installerCallback == nullptr) {
         return false;
     }
+#ifdef BC_TRANS_ENABLE
+    ScanPackages();
+#endif
     InstallPreBundle(systemPathList_, installerCallback);
     return true;
 }
