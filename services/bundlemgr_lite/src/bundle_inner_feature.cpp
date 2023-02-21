@@ -128,6 +128,9 @@ uint8_t BundleInnerFeature::InstallInnerBundle(const uint8_t funcId, IpcIo *req,
     }
     uint8_t svcIdentityInfoRsp = GetSvcIdentityInfo(info, &svc, reqPath, req);
     if (svcIdentityInfoRsp != ERR_OK) {
+        AdapterFree(info->path);
+        AdapterFree(info->svc);
+        AdapterFree(info);
         return svcIdentityInfoRsp;
     }
     Request request = {
