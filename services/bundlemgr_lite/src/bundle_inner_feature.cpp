@@ -150,6 +150,9 @@ uint8_t BundleInnerFeature::InstallInnerBundle(const uint8_t funcId, IpcIo *req,
     svc = nullptr;
 #endif
     if (svcIdentityInfoRsp != ERR_OK) {
+        AdapterFree(info->path);
+        AdapterFree(info->svc);
+        AdapterFree(info);
         return svcIdentityInfoRsp;
     }
     Request request = {
