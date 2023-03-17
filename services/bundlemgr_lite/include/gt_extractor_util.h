@@ -36,4 +36,8 @@ private:
     static bool HasCopiedData(const char *filePath, int32_t fp, uint64_t size);
 };
 } // namespace OHOS
+
+extern "C" {
+void RefreshAllServiceTimeStamp(void);
+}
 #endif // OHOS_GT_BUNDLE_EXTRACTOR_UTIL_H

@@ -117,6 +117,7 @@ uint8_t GtExtractorUtil::ExtractFileHeaderInfo(int32_t fp, char **bundleName)
 uint8_t GtExtractorUtil::ExtractFileToPath(const char *appInstallPath, int32_t fp, uint64_t &fileSize, char **fileName,
     char **relativeFilePath)
 {
+    RefreshAllServiceTimeStamp();
     uint8_t errorCode = ExtractFileAttr(fp, fileName, relativeFilePath, fileSize);
     if (errorCode != ERR_OK) {
         return errorCode;
