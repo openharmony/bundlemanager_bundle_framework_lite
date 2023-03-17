@@ -128,10 +128,12 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
     (void) ReportInstallCallback(OPERATION_DOING, 0, BMS_INSTALLATION_START, installerCallback);
 #ifdef _MINI_BMS_PERMISSION_
     DisableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     ret = installer_->Install(path, installerCallback);
 #ifdef _MINI_BMS_PERMISSION_
     EnableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Install ret is %d", ret);
     if (ret == 0) {
@@ -173,10 +175,12 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
         BMS_UNINSTALLATION_START, installerCallback);
 #ifdef _MINI_BMS_PERMISSION_
     DisableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     uint8_t ret = installer_->Uninstall(innerBundleName);
 #ifdef _MINI_BMS_PERMISSION_
     EnableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Uninstall ret is %d", ret);
     if (ret == 0) {
@@ -315,6 +319,7 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
     // scan system apps and third system apps
 #ifdef _MINI_BMS_PERMISSION_
     DisableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     ScanSystemApp(uninstallRecord, &systemPathList_);
     if (uninstallRecord != nullptr) {
@@ -325,6 +330,7 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
     ScanThirdApp(INSTALL_PATH, &systemPathList_);
 #ifdef _MINI_BMS_PERMISSION_
     EnableServiceWdg();
+    RefreshAllServiceTimeStamp();
 #endif
     for (auto node = systemPathList.Begin(); node != systemPathList.End(); node = node->next_) {
         ToBeInstalledApp *toBeInstalledApp = node->value_;
@@ -338,6 +344,7 @@ void GtManagerService::InstallPreBundle(List<ToBeInstalledApp *> systemPathList,
                 toBeInstalledApp->isSystemApp);
         }
         (void) Install(toBeInstalledApp->path, nullptr, installerCallback);
+        RefreshAllServiceTimeStamp();
     }
     RemoveSystemAppPathList(&systemPathList);
 }
@@ -638,6 +645,7 @@ void GtManagerService::ReloadEntireBundleInfo(const char *appPath, const char *b
             APP_ERRCODE_EXTRA(EXCE_ACE_APP_SCAN, EXCE_ACE_APP_SCAN_PARSE_JSON_FALIED);
             AdapterFree(appId);
             AdapterFree(codePath);
+            BundleUtil::RemoveDir(appPath);
             return;
         }
     }
