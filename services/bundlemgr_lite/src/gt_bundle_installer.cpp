@@ -68,6 +68,7 @@ uint8_t GtBundleInstaller::PreCheckBundle(const char *path, int32_t &fp, Signatu
         return errorCode;
     }
 
+    RefreshAllServiceTimeStamp();
     errorCode = VerifySignature(path, signatureInfo, fileSize, bundleStyle);
     if (errorCode != ERR_OK) {
         UI_Free(bundleName);
@@ -244,6 +245,7 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     (void) GtManagerService::GetInstance().ReportInstallCallback(OPERATION_DOING,
         0, BMS_SECOND_FINISHED_PROCESS, installerCallback);
     // parse HarmoyProfile.json, get permissions and bundleInfo
+    RefreshAllServiceTimeStamp();
     errorCode = GtBundleParser::ParseHapProfile(fp, fileSize, permissions, bundleRes, &bundleInfo);
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
     SetCurrentBundle(bundleInfo->bundleName);
@@ -275,6 +277,7 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     char *tmpCodePath = BundleUtil::Strscat(tmpCodePathComp, sizeof(tmpCodePathComp) / sizeof(char *));
     errorCode = (tmpCodePath == nullptr) ? ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR : ERR_OK;
     CHECK_PRO_RESULT(errorCode, fp, permissions, bundleInfo, signatureInfo);
+    RefreshAllServiceTimeStamp();
     errorCode = GtBundleExtractor::ExtractHap(tmpCodePath, installRecord.bundleName, fp, fileSize, bundleStyle);
     close(fp);
     CHECK_PRO_PART_ROLLBACK(errorCode, tmpCodePath, permissions, bundleInfo, signatureInfo);
@@ -287,6 +290,7 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     CHECK_PRO_PART_ROLLBACK(errorCode, tmpCodePath, permissions, bundleInfo, signatureInfo);
     installRecord.jsEngineVersion = jsEngineVersion;
     // try to transform js file to bc file
+    RefreshAllServiceTimeStamp();
     errorCode = TransformJsToBc(tmpCodePath, installRecord);
     CHECK_PRO_PART_ROLLBACK(errorCode, tmpCodePath, permissions, bundleInfo, signatureInfo);
 #endif
@@ -297,7 +301,7 @@ uint8_t GtBundleInstaller::ProcessBundleInstall(const char *path, const char *ra
     errorCode = HandleFileAndBackUpRecord(installRecord, tmpCodePath, randStr, bundleInfo->dataPath, isUpdate);
     AdapterFree(tmpCodePath);
     CHECK_PRO_ROLLBACK(errorCode, permissions, bundleInfo, signatureInfo, randStr);
-
+    RefreshAllServiceTimeStamp();
     // move rawfile to data path when rawfile is exists
     errorCode = MoveRawFileToDataPath(bundleInfo);
     CHECK_PRO_ROLLBACK(errorCode, permissions, bundleInfo, signatureInfo, randStr);

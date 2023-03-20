@@ -117,6 +117,7 @@ private:
 extern "C" {
 void EnableServiceWdg(void);
 void DisableServiceWdg(void);
+void RefreshAllServiceTimeStamp(void);
 void SetCurrentBundle(const char *name);
 const char *GetCurrentBundle();
 }

@@ -78,4 +78,8 @@ private:
 #endif
 }; // namespace OHOS
 }
+
+extern "C" {
+void RefreshAllServiceTimeStamp(void);
+}
 #endif // OHOS_BUNDLE_UTIL_H
