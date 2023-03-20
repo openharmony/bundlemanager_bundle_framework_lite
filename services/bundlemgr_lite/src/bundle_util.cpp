@@ -951,6 +951,9 @@ char *BundleUtil::GetRootDir(const char *dir, int32_t index)
 
 bool BundleUtil::CheckDirIsEmpty(const char *dirPath, List<char *>* list)
 {
+#ifndef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
+    RefreshAllServiceTimeStamp();
+#endif
     DIR *dir = nullptr;
     if ((dir = opendir(dirPath)) == nullptr) {
         return false;
