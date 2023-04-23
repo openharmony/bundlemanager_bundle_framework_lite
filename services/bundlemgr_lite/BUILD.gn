@@ -11,15 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/lite/config/component/lite_component.gni")
+import(
+    "//foundation/bundlemanager/bundle_framework_lite/bundle_framework_lite.gni")
 
 config("bundle_config") {
   defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
   cflags_cc = [ "-std=c++14" ]
-}
-
-declare_args() {
-  enable_ohos_bundle_manager_service = false
-  enable_ohos_bundle_manager_service_permission = false
 }
 
 if (ohos_kernel_type == "liteos_m") {
