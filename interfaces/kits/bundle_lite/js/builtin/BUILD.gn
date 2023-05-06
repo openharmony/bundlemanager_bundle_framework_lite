@@ -12,15 +12,18 @@
 # limitations under the License.
 import("//build/lite/config/component/lite_component.gni")
 import("//build/lite/ndk/ndk.gni")
+import(
+    "//foundation/bundlemanager/bundle_framework_lite/bundle_framework_lite.gni")
+
 static_library("capability_api_simulator") {
   sources = [ "${appexecfwk_lite_path}/interfaces/kits/bundle_lite/js/builtin/src/capability_module.cpp" ]
   include_dirs = [
-    "//foundation/arkui/ace_engine_lite/interfaces/inner_api/builtin/base",
-    "//foundation/arkui/ace_engine_lite/interfaces/inner_api/builtin/jsi",
-    "${appexecfwk_lite_path}/interfaces/kits/bundle_lite/js/builtin/include",
-    "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
     "${aafwk_lite_path}/interfaces/kits/want_lite",
     "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
+    "${appexecfwk_lite_path}/interfaces/kits/bundle_lite/js/builtin/include",
+    "${arkui_path}/ace_engine_lite/interfaces/inner_api/builtin/base",
+    "${arkui_path}/ace_engine_lite/interfaces/inner_api/builtin/jsi",
+    "${communication_path}/ipc/interfaces/innerkits/c/ipc/include",
   ]
   defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
   outdir = rebase_path("$root_out_dir")
@@ -33,12 +36,12 @@ shared_library("capability_api") {
   cflags += [ "-Wall" ]
   cflags_cc = cflags
   include_dirs = [
-    "//foundation/arkui/ace_engine_lite/interfaces/inner_api/builtin/base",
-    "//foundation/arkui/ace_engine_lite/interfaces/inner_api/builtin/jsi",
-    "${appexecfwk_lite_path}/interfaces/kits/bundle_lite/js/builtin/include",
-    "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
     "${aafwk_lite_path}/interfaces/kits/want_lite",
     "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
+    "${appexecfwk_lite_path}/interfaces/kits/bundle_lite/js/builtin/include",
+    "${arkui_path}/ace_engine_lite/interfaces/inner_api/builtin/base",
+    "${arkui_path}/ace_engine_lite/interfaces/inner_api/builtin/jsi",
+    "${communication_path}/ipc/interfaces/innerkits/c/ipc/include",
   ]
   defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
   outdir = rebase_path("$root_out_dir")

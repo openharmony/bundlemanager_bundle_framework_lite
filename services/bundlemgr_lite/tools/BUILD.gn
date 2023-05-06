@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/lite/config/component/lite_component.gni")
+import(
+    "//foundation/bundlemanager/bundle_framework_lite/bundle_framework_lite.gni")
 
 generate_notice_file("bm_notice_file") {
   module_name = "bm"
@@ -37,19 +39,19 @@ executable("bm") {
 
   deps = [
     "${appexecfwk_lite_path}/frameworks/bundle_lite:bundle",
-    "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
-    "//base/security/permission_lite/services/pms_client:pms_client",
-    "//base/startup/init/interfaces/innerkits:libbegetutil",
+    "${communication_path}/ipc/interfaces/innerkits/c/ipc:ipc_single",
+    "${hilog_lite_path}/frameworks/featured:hilog_shared",
+    "${permission_lite_path}/services/pms_client:pms_client",
+    "${samgr_lite_path}/samgr:samgr",
+    "${startup_path}/init/interfaces/innerkits:libbegetutil",
     "//build/lite/config/component/cJSON:cjson_shared",
-    "//foundation/communication/ipc/interfaces/innerkits/c/ipc:ipc_single",
-    "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
   ]
 
   include_dirs = [
     "include",
-    "//base/security/permission_lite/services/pms_client/include",
-    "//base/security/permission_lite/interfaces/innerkits",
-    "//base/startup/init/interfaces/innerkits/include/syspara",
+    "${permission_lite_path}/services/pms_client/include",
+    "${permission_lite_path}/interfaces/innerkits",
+    "${startup_path}/init/interfaces/innerkits/include/syspara",
     "${aafwk_lite_path}/interfaces/inner_api/abilitymgr_lite",
     "${aafwk_lite_path}/interfaces/kits/want_lite",
     "${aafwk_lite_path}/services/abilitymgr_lite/include",
@@ -57,11 +59,11 @@ executable("bm") {
     "${appexecfwk_lite_path}/frameworks/bundle_lite/include",
     "${appexecfwk_lite_path}/utils/bundle_lite",
     "${appexecfwk_lite_path}/interfaces/kits/bundle_lite",
-    "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/samgr",
-    "//foundation/systemabilitymgr/samgr_lite/interfaces/kits/registry",
+    "${samgr_lite_path}/interfaces/kits/samgr",
+    "${samgr_lite_path}/interfaces/kits/registry",
     "//third_party/cJSON",
-    "//commonlibrary/utils_lite/include",
-    "//foundation/communication/ipc/interfaces/innerkits/c/ipc/include",
+    "${utils_lite_path}/include",
+    "${communication_path}/ipc/interfaces/innerkits/c/ipc/include",
   ]
 
   defines = [ "OHOS_APPEXECFWK_BMS_BUNDLEMANAGER" ]
