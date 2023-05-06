@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/lite/config/component/lite_component.gni")
+import(
+    "//foundation/bundlemanager/bundle_framework_lite/bundle_framework_lite.gni")
 
 generate_notice_file("bundle_daemon_lite_notice_file") {
   module_name = "bundle_daemon_lite"
@@ -43,9 +45,9 @@ executable("bundle_daemon") {
   ]
 
   deps = [
-    "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
+    "${hilog_lite_path}/frameworks/featured:hilog_shared",
+    "${samgr_lite_path}/samgr:samgr",
     "//build/lite/config/component/zlib:zlib_shared",
-    "//foundation/systemabilitymgr/samgr_lite/samgr:samgr",
   ]
 
   include_dirs = [
@@ -53,9 +55,9 @@ executable("bundle_daemon") {
     "${appexecfwk_lite_path}/interfaces/inner_api/bundlemgr_lite",
     "${appexecfwk_lite_path}/utils/bundle_lite",
     "${appexecfwk_lite_path}/services/bundlemgr_lite/include",
-    "//foundation/systemabilitymgr/samgr_lite/interfaces/innerkits/samgr",
-    "//foundation/systemabilitymgr/samgr_lite/interfaces/innerkits/registry",
+    "${samgr_lite_path}/interfaces/innerkits/samgr",
+    "${samgr_lite_path}/interfaces/innerkits/registry",
     "//third_party/zlib/contrib/minizip",
-    "//commonlibrary/utils_lite/include",
+    "${utils_lite_path}/include",
   ]
 }

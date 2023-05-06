@@ -11,6 +11,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+ace_engine_lite_path = "//foundation/arkui/ace_engine_lite"
+appverify_lite_path =
+    "//base/security/appverify/interfaces/innerkits/appverify_lite"
+arkui_path = "//foundation/arkui"
+communication_path = "//foundation/communication"
+hilog_lite_path = "//base/hiviewdfx/hilog_lite"
+permission_lite_path = "//base/security/permission_lite"
+resource_management_lite_path = "//base/global/resource_management_lite"
+samgr_lite_path = "//foundation/systemabilitymgr/samgr_lite"
+startup_path = "//base/startup"
+utils_lite_path = "//commonlibrary/utils_lite"
+
 declare_args() {
   enable_ohos_bundle_manager_service = false
   enable_ohos_bundle_manager_service_permission = false
