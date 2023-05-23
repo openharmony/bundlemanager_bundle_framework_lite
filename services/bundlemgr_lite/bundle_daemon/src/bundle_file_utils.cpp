@@ -68,7 +68,7 @@ bool BundleFileUtils::MkRecursiveDir(const char *dir, bool isReadOthers)
     for (size_t i = 0; i < len; ++i) {
         rootDir[i] = dir[i];
         if ((rootDir[i] == PATH_SEPARATOR || i == (len - 1)) && !IsExistDir(rootDir)) {
-            mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH;
+            mode_t mode = S_IRWXU | S_IRWXG;
             mode |= (isReadOthers ? S_IROTH : 0);
             if (mkdir(rootDir, mode) < 0) {
                 return false;
