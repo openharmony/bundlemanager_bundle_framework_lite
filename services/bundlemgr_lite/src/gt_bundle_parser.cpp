@@ -398,7 +398,9 @@ BundleInfo *GtBundleParser::CreateBundleInfo(const char *path, const BundleProfi
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return nullptr;
     }
-
+#ifdef _MINI_BMS_PERMISSION_
+    RefreshAllServiceTimeStamp();
+#endif
     uint8_t errorCode = ConvertResInfoToBundleInfo(path, bundleRes.abilityRes->labelId, bundleRes.abilityRes->iconId,
         bundleInfo);
     if (errorCode != ERR_OK) {
