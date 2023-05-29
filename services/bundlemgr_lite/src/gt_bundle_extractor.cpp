@@ -145,7 +145,9 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] extract file data pos failed!");
         return false;
     }
-
+#ifdef _MINI_BMS_PERMISSION_
+    RefreshAllServiceTimeStamp();
+#endif
     while (index < totalFileSize) {
         if (GtExtractorUtil::ExtractFileAttr(fp, &fileName, &relativeFilePath, fileSize) != ERR_OK) {
             HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] get file attr failed!");
@@ -183,6 +185,9 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
 uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName, char **label, char **smallIconPath,
     char **bigIconPath)
 {
+#ifdef _MINI_BMS_PERMISSION_
+    RefreshAllServiceTimeStamp();
+#endif
     if (!BundleUtil::CheckRealPath(path)) {
         return ERR_APPEXECFWK_INSTALL_FAILED_PARAM_ERROR;
     }
