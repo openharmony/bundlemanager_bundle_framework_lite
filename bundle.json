@@ -24,7 +24,7 @@
             "ability_lite",
             "utils_lite",
             "hilog",
-            "permission",
+            "permission_lite",
             "samgr_lite",
             "resource_management_lite",
             "appverify"
