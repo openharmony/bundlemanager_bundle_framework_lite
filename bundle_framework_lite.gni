@@ -13,7 +13,7 @@
 
 ace_engine_lite_path = "//foundation/arkui/ace_engine_lite"
 appverify_lite_path =
-    "//base/security/appverify/interfaces/innerkits/appverify_lite"
+    "//foundation/bundlemanager/appverify/interfaces/innerkits/appverify_lite"
 arkui_path = "//foundation/arkui"
 communication_path = "//foundation/communication"
 hilog_lite_path = "//base/hiviewdfx/hilog_lite"
