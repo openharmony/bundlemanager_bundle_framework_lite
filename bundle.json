@@ -15,7 +15,8 @@
         "name": "bundle_framework_lite",
         "subsystem": "bundlemanager",
         "adapted_system_type": [
-            "mini"
+            "mini",
+            "small"
         ],
         "rom": "300KB",
         "ram": ">2MB",
@@ -32,7 +33,7 @@
             "third_party": [
                 "zlib",
                 "bounds_checking_function",
-                "cjson",
+                "cJSON",
                 "jerryscript"
             ]
         },
