@@ -103,6 +103,7 @@ const char PROFILE_KEY_MODULE_ABILITY_TYPE[] = "type";
 const char PROFILE_KEY_MODULE_ABILITY_LAUNCHTYPE[] = "launchType";
 const char PROFILE_KEY_MODULE_ABILITY_VISIBLE[] = "visible";
 const char PROFILE_KEY_MODULE_ABILITY_DEVICE_CAP[] = "deviceCapability";
+const char PROFILE_KEY_MODULE_ABILITY_SRC_PATH[] = "srcPath";
 // js config
 const char PROFILE_KEY_JS[] = "js";
 
@@ -158,8 +159,12 @@ const char JSON_PATH_NO_SLASH_END[] = "user/ace/etc/bundles";
 // store bundle permissions for IAM
 const char PERMISSIONS_PATH[] = "user/ace/etc/permissions";
 const char ASSET_JS_PATH[] = "/assets/js/default";
+const char NEW_ASSET_JS_PATH[] = "/assets/js/MainAbility";
+const char ASSET_PATH[] = "/assets/js/";
 const char ICON_NAME[] = "/icon.bin";
 const char SMALL_ICON_NAME[] = "/icon_small.bin";
+const char ICON_PNG_NAME[] = "/icon.png.bin";
+const char SMALL_ICON_PNG_NAME[] = "/icon_small.png.bin";
 const char DEFAULT_ICON_SETTING[] = "$media:icon";
 const char INSTALL_FILE_SUFFIX[] = ".bin";
 const char TMP_RESOURCE_DIR[] = "user/ace/run/tmpResource";
@@ -231,6 +236,7 @@ struct BundleProfile {
     char *vendor;
     char *label;
     char *iconPath;
+    char *srcPath = nullptr;
     ProfileVersion profileVersion;
     ProfileApiVersion profileApiVersion;
     ModuleInfo moduleInfo;
