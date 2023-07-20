@@ -498,6 +498,14 @@ uint8_t GtBundleInstaller::TransformJsToBc(const char *codePath, InstallRecord &
     if (jsPath == nullptr) {
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
+    if (!BundleUtil::IsDir(jsPath)) {
+        AdapterFree(jsPath);
+        char *newJsPathComp[] = {const_cast<char *>(codePath), const_cast<char *>(NEW_ASSET_JS_PATH)};
+        jsPath = BundleUtil::Strscat(newJsPathComp, sizeof(newJsPathComp) / sizeof(char *));
+        if (jsPath == nullptr) {
+            return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
+        }
+    }
     EXECRES result = walk_directory(jsPath);
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] transform js to bc when install, result is %d", result);
     if (result != EXCE_ACE_JERRY_EXEC_OK) {

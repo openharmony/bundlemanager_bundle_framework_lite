@@ -303,6 +303,11 @@ uint8_t GtBundleParser::ParseAbilityInfo(const cJSON *abilityInfoObjects, Bundle
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_ICONPATH_ERROR;
     }
     bundleRes.abilityRes->iconId = iconId;
+    if (cJSON_HasObjectItem(firstAbilityJson, PROFILE_KEY_MODULE_ABILITY_SRC_PATH)) {
+        bundleProfile.srcPath = ParseValue(firstAbilityJson, PROFILE_KEY_MODULE_ABILITY_SRC_PATH);
+        CHECK_NULL(bundleProfile.srcPath, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_SRC_PATH_ERROR);
+    }
+
     return ERR_OK;
 }
 
@@ -409,18 +414,19 @@ BundleInfo *GtBundleParser::CreateBundleInfo(const char *path, const BundleProfi
         return nullptr;
     }
     // get js path
-    char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_JS_PATH)};
-    char *jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    char *jsPath = nullptr;
+    if (bundleProfile.srcPath == nullptr) {
+        char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_JS_PATH)};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    } else {
+        char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_PATH), bundleProfile.srcPath};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    }
     if (jsPath == nullptr) {
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return nullptr;
     }
 
-    if (!BundleUtil::IsDir(jsPath)) {
-        BundleInfoUtils::FreeBundleInfo(bundleInfo);
-        AdapterFree(jsPath);
-        return nullptr;
-    }
     // set abilityInfo
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = bundleInfo->bundleName};
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(bundleInfo, abilityInfo)) {
@@ -510,17 +516,48 @@ bool GtBundleParser::ConvertIconResToBundleInfo(const char *resPath, uint32_t ic
         AdapterFree(bigIconPath);
         return false;
     }
+
+    char *bigIconPngPathComp[] = {
+        bundleInfo->codePath, const_cast<char *>(ASSETS), relativeIconPath, const_cast<char *>(ICON_PNG_NAME)
+    };
+    char *smallIconPngPathComp[] = {
+        bundleInfo->codePath, const_cast<char *>(ASSETS), relativeIconPath, const_cast<char *>(SMALL_ICON_PNG_NAME)
+    };
+    char *bigIconPngPath = BundleUtil::Strscat(bigIconPngPathComp, sizeof(bigIconPngPathComp) / sizeof(char *));
+    if (bigIconPngPath == nullptr) {
+        Free(relativeIconPath);
+        return false;
+    }
+    char *smallIconPngPath = BundleUtil::Strscat(smallIconPngPathComp, sizeof(smallIconPngPathComp) / sizeof(char *));
+    if (smallIconPngPath == nullptr) {
+        Free(relativeIconPath);
+        AdapterFree(bigIconPngPath);
+        return false;
+    }
     Free(relativeIconPath);
-    if (!BundleUtil::IsFile(bigIconPath) || !BundleUtil::IsFile(smallIconPath)) {
+    bool isBigIconExisted = BundleUtil::IsFile(bigIconPath);
+    bool isSmallIconExisted = BundleUtil::IsFile(smallIconPath);
+    if ((!isBigIconExisted && !BundleUtil::IsFile(bigIconPngPath))||
+        (!isSmallIconExisted && !BundleUtil::IsFile(smallIconPngPath))) {
         AdapterFree(bigIconPath);
         AdapterFree(smallIconPath);
+        AdapterFree(bigIconPngPath);
+        AdapterFree(smallIconPngPath);
         return false;
     }
     // release bigIconPath and smallIconPath memory in bundleInfo first
     AdapterFree(bundleInfo->bigIconPath);
     AdapterFree(bundleInfo->smallIconPath);
-    bundleInfo->bigIconPath = bigIconPath;
-    bundleInfo->smallIconPath = smallIconPath;
+    if (isBigIconExisted) {
+        bundleInfo->bigIconPath = bigIconPath;
+    } else {
+        bundleInfo->bigIconPath = bigIconPngPath;
+    }
+    if (isSmallIconExisted) {
+        bundleInfo->smallIconPath = smallIconPath;
+    } else {
+        bundleInfo->smallIconPath = smallIconPngPath;
+    }
     return true;
 }
 
@@ -599,14 +636,20 @@ uint8_t GtBundleParser::SaveBundleInfo(const BundleProfile &bundleProfile, const
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
-
-    char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_JS_PATH)};
-    char *jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    char *jsPath = nullptr;
+    if (bundleProfile.srcPath == nullptr) {
+        char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_JS_PATH)};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    } else {
+        char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_PATH), bundleProfile.srcPath};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    }
     if (jsPath == nullptr) {
         BundleInfoUtils::FreeBundleInfo(*bundleInfo);
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
+
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = (*bundleInfo)->bundleName};
     // set abilityInfo
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(*bundleInfo, abilityInfo)) {

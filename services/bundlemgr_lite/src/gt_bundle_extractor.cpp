@@ -158,7 +158,8 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
 
         int32_t fileNameLen = strlen(fileName);
         if ((strlen(relativeFilePath) == 0 && (strcmp(fileName, PROFILE_NAME) == 0)) ||
-            !BundleUtil::StartWith(relativeFilePath, ASSET_JS_PATH)) {
+            (!BundleUtil::StartWith(relativeFilePath, ASSET_JS_PATH) &&
+            !BundleUtil::StartWith(relativeFilePath, NEW_ASSET_JS_PATH))) {
             if (!GtExtractorUtil::HasWrittenFile(path, relativeFilePath, fileName, fp, fileSize)) {
                 UI_Free(fileName);
                 UI_Free(relativeFilePath);
@@ -200,17 +201,6 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
 #else
     int32_t totalFileSize = BundleUtil::GetFileSize(path);
 #endif
-    char *emptyJsPathComp[] = {const_cast<char *>(TMP_RESOURCE_DIR), const_cast<char *>(ASSET_JS_PATH)};
-    char *emptyJsPath = BundleUtil::Strscat(emptyJsPathComp, sizeof(emptyJsPathComp) / sizeof(char *));
-    if (emptyJsPath == nullptr) {
-        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
-    }
-
-    if (!BundleUtil::MkDirs(emptyJsPath)) {
-        AdapterFree(emptyJsPath);
-        return ERR_APPEXECFWK_INSTALL_FAILED_CREATE_DATA_DIR_ERROR;
-    }
-    AdapterFree(emptyJsPath);
 
     int32_t fp = open(path, O_RDONLY, S_IREAD);
     if (fp < 0) {

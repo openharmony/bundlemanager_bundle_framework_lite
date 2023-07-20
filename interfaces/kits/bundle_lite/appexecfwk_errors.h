@@ -202,7 +202,7 @@ enum AppexecfwkErrors {
     ERR_APPEXECFWK_INSTALL_FAILED_PARSE_METADATA_ERROR,
 
     /** Failed to parse the {@link AbilityInfo}. */
-    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITIES_ERROR,
+    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITIES_ERROR = 60,
 
     /** Failed to parse the class name of the ability. */
     ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_NAME_ERROR,
@@ -232,7 +232,7 @@ enum AppexecfwkErrors {
     ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_LABEL_LENGTH_ERROR,
 
     /** The parsed application version name exceeds the maximum length (127 bytes). */
-    ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_VERSIONNAME_LENGTH_ERROR,
+    ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_VERSIONNAME_LENGTH_ERROR = 70,
 
     /** The parsed application metadata name exceeds the maximum length (255 bytes). */
     ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_METADATA_NAME_LENGTH_ERROR,
@@ -262,7 +262,7 @@ enum AppexecfwkErrors {
     ERR_APPEXECFWK_INSTALL_FAILED_EXTRACT_HAP_ERROR,
 
     /** Failed to parse the JavaScript path. This error code is available only to basic watches. */
-    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_JS_DIR_ERROR,
+    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_JS_DIR_ERROR = 80,
 
     /** The resource index does not exist. */
     ERR_APPEXECFWK_INSTALL_FAILED_RESOURCE_INDEX_NOT_EXISTS,
@@ -359,6 +359,9 @@ enum AppexecfwkErrors {
 
     /** The server that invokes the Bundle Manager Service does not have required permission. */
     ERR_APPEXECFWK_PERMISSION_DENIED,
+
+    /** Failed to parse the source path of the ability. */
+    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_SRC_PATH_ERROR,
 };
 #endif  // OHOS_APPEXECFWK_ERRORS_H
 /** @} */
