@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "ability_info.h"
+#include "ability_info_utils.h"
 
 #include "utils.h"
 
@@ -32,5 +33,6 @@ void ClearAbilityInfo(AbilityInfo *abilityInfo)
     AdapterFree(abilityInfo->label);
 #else
     AdapterFree(abilityInfo->srcPath);
+    OHOS::AbilityInfoUtils::ClearExtendedInfo(abilityInfo);
 #endif
 }

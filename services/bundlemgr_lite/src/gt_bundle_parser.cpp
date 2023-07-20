@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -303,6 +303,165 @@ uint8_t GtBundleParser::ParseAbilityInfo(const cJSON *abilityInfoObjects, Bundle
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_ICONPATH_ERROR;
     }
     bundleRes.abilityRes->iconId = iconId;
+    if (cJSON_HasObjectItem(firstAbilityJson, PROFILE_KEY_MODULE_ABILITY_SRC_PATH)) {
+        bundleProfile.srcPath = ParseValue(firstAbilityJson, PROFILE_KEY_MODULE_ABILITY_SRC_PATH);
+        CHECK_NULL(bundleProfile.srcPath, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITY_SRC_PATH_ERROR);
+    }
+    return ParseAllAbilityInfo(abilityInfoObjects, bundleProfile);
+}
+
+uint8_t GtBundleParser::ParseAllAbilityInfo(const cJSON *abilityObjects, BundleProfile &bundleProfile)
+{
+    const uint32_t MAX_ABILITY_NUM = 16;
+    uint32_t abilityNum = cJSON_GetArraySize(abilityObjects);
+    if (abilityNum == 0) {
+        return ERR_OK;
+    }
+    if (abilityNum > MAX_ABILITY_NUM) {
+        HILOG_ERROR(
+            HILOG_MODULE_AAFWK, "too many abilityInfos, (cur:%{public}d/max:%{public}d", abilityNum, MAX_ABILITY_NUM);
+        return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITIES_ERROR;
+    }
+    uint32_t sizeInByte = abilityNum * sizeof(AbilityInfo);
+    AbilityInfo *abilityInfoPtr = reinterpret_cast<AbilityInfo *>(AdapterMalloc(sizeInByte));
+    if (abilityInfoPtr == nullptr || memset_s(abilityInfoPtr, sizeInByte, 0, sizeInByte) != EOK) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "abilityInfos alloc memory fail");
+        AdapterFree(abilityInfoPtr);
+        return ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
+    }
+    bundleProfile.numOfAbility = abilityNum;
+    bundleProfile.abilityInfos = abilityInfoPtr;
+    const cJSON *object = nullptr;
+    cJSON_ArrayForEach(object, abilityObjects) {
+        abilityInfoPtr->bundleName = bundleProfile.bundleName;
+        uint8_t errorCode = ParsePerAbilityInfo(object, *abilityInfoPtr++);
+        CHECK_IS_TRUE((errorCode == ERR_OK), errorCode);
+    }
+    return ERR_OK;
+}
+uint8_t GtBundleParser::ParsePerAbilityInfo(const cJSON *abilityObjects, AbilityInfo &abilityInfo)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] start parse skill and metadata");
+    uint8_t errorCode = ParseAbilitySkills(abilityObjects, abilityInfo);
+    if (errorCode != ERR_OK) {
+        return errorCode;
+    }
+    return ParseMetaData(abilityObjects, abilityInfo.metaData, METADATA_SIZE);
+}
+uint8_t GtBundleParser::ParseMetaData(const cJSON *moduleObject, MetaData *metaData[], int maxCount)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] start parse metadata");
+    cJSON *object = ParseValue(moduleObject, PROFILE_KEY_MODULE_METADATA, nullptr);
+    // if no metadata, return ERR_OK
+    if (object == nullptr || object->type == cJSON_NULL) {
+        return ERR_OK;
+    }
+    object = cJSON_GetObjectItem(object, PROFILE_KEY_MODULE_METADATA_CUSTOMIZEDATA);
+    if (object == nullptr || object->type == cJSON_NULL) {
+        return ERR_OK;
+    }
+    CHECK_IS_TRUE((cJSON_IsArray(object) && (cJSON_GetArraySize(object) <= maxCount)),
+        ERR_APPEXECFWK_INSTALL_FAILED_PARSE_METADATA_ERROR);
+
+    int32_t i = 0;
+    cJSON *objectItem = nullptr;
+    cJSON_ArrayForEach(objectItem, object)
+    {
+        metaData[i] = reinterpret_cast<MetaData *>(AdapterMalloc(sizeof(MetaData)));
+        if (metaData[i] == nullptr || memset_s(metaData[i], sizeof(MetaData), 0, sizeof(MetaData)) != EOK) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "mallco metadate fail");
+            return ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
+        }
+        if (cJSON_HasObjectItem(objectItem, PROFILE_KEY_MODULE_METADATA_NAME)) {
+            metaData[i]->name = Utils::Strdup(ParseValue(objectItem, PROFILE_KEY_MODULE_METADATA_NAME));
+            CHECK_NULL(metaData[i]->name, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_METADATA_ERROR);
+            CHECK_LENGTH(strlen(metaData[i]->name),
+                MAX_METADATA_NAME,
+                ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_METADATA_NAME_LENGTH_ERROR);
+        }
+
+        if (cJSON_HasObjectItem(objectItem, PROFILE_KEY_MODULE_METADATA_VALUE)) {
+            metaData[i]->value = Utils::Strdup(ParseValue(objectItem, PROFILE_KEY_MODULE_METADATA_VALUE));
+            CHECK_NULL(metaData[i]->value, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_METADATA_ERROR);
+            CHECK_LENGTH(strlen(metaData[i]->value),
+                MAX_METADATA_VALUE,
+                ERR_APPEXECFWK_INSTALL_FAILED_EXCEED_MAX_METADATA_VALUE_LENGTH_ERROR);
+        }
+
+        if (cJSON_HasObjectItem(objectItem, PROFILE_KEY_MODULE_METADATA_EXTRA)) {
+            metaData[i]->extra = Utils::Strdup(ParseValue(objectItem, PROFILE_KEY_MODULE_METADATA_EXTRA));
+            CHECK_NULL(metaData[i]->extra, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_METADATA_ERROR);
+        }
+        i++;
+    }
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] end parse metadata");
+    return ERR_OK;
+}
+uint8_t GtBundleParser::ParseAbilitySkills(const cJSON *abilityObjectItem, AbilityInfo &abilityInfo)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] start parse skills");
+    cJSON *skillsObject = ParseValue(abilityObjectItem, PROFILE_KEY_SKILLS, nullptr);
+    if (skillsObject == nullptr) {
+        return ERR_OK;
+    }
+    CHECK_IS_TRUE((cJSON_IsArray(skillsObject) && (cJSON_GetArraySize(skillsObject) <= SKILL_SIZE)),
+        ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR);
+
+    int32_t i = 0;
+    cJSON *object = nullptr;
+    cJSON_ArrayForEach(object, skillsObject)
+    {
+        Skill *skillPtr = reinterpret_cast<Skill *>(AdapterMalloc(sizeof(Skill)));
+        if (skillPtr == nullptr || memset_s(skillPtr, sizeof(Skill), 0, sizeof(Skill)) != EOK) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "mallco metadate fail");
+            return ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
+        }
+        if (ParseOneSkill(object, *skillPtr) != ERR_OK) {
+            AdapterFree(skillPtr);
+            return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR;
+        }
+        abilityInfo.skills[i++] = skillPtr;
+    }
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] end parse skills");
+    return ERR_OK;
+}
+
+uint8_t GtBundleParser::ParseOneSkill(const cJSON *skillObject, Skill &skill)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] start parse one skill");
+    cJSON *entities = ParseValue(skillObject, PROFILE_KEY_SKILLS_ENTITIES, nullptr);
+    cJSON *actions = ParseValue(skillObject, PROFILE_KEY_SKILLS_ACTIONS, nullptr);
+    if (entities == nullptr && actions == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] entities and actions is invalid");
+        return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR;
+    }
+    int entitiesCount = cJSON_GetArraySize(entities);
+    int actionsCount = cJSON_GetArraySize(actions);
+    if (entitiesCount > MAX_SKILL_ITEM || actionsCount > MAX_SKILL_ITEM) {
+        HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] too many skills or actions configuredd");
+        return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR;
+    }
+    int32_t i = 0;
+    cJSON *object = nullptr;
+    cJSON_ArrayForEach(object, entities)
+    {
+        if (!cJSON_IsString(object)) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] a string is expected in entities");
+            return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR;
+        }
+        skill.entities[i++] = Utils::Strdup(object->valuestring);
+    }
+    i = 0;
+    object = nullptr;
+    cJSON_ArrayForEach(object, actions)
+    {
+        if (!cJSON_IsString(object)) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] a string is expected in actions");
+            return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR;
+        }
+        skill.actions[i++] = Utils::Strdup(object->valuestring);
+    }
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] end parse one skill");
     return ERR_OK;
 }
 
@@ -409,25 +568,34 @@ BundleInfo *GtBundleParser::CreateBundleInfo(const char *path, const BundleProfi
         return nullptr;
     }
     // get js path
-    char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_JS_PATH)};
-    char *jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    char *jsPath = nullptr;
+    if (bundleProfile.srcPath == nullptr) {
+        char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_JS_PATH)};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    } else {
+        char *jsPathComp[] = {bundleInfo->codePath, const_cast<char *>(ASSET_PATH), bundleProfile.srcPath};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    }
     if (jsPath == nullptr) {
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return nullptr;
     }
 
-    if (!BundleUtil::IsDir(jsPath)) {
-        BundleInfoUtils::FreeBundleInfo(bundleInfo);
-        AdapterFree(jsPath);
-        return nullptr;
-    }
     // set abilityInfo
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = bundleInfo->bundleName};
+#ifdef _MINI_BMS_PARSE_METADATA_
+    if (!BundleInfoUtils::SetBundleInfoAbilityInfo(bundleInfo, abilityInfo, bundleProfile)) {
+        AdapterFree(abilityInfo.srcPath);
+        BundleInfoUtils::FreeBundleInfo(bundleInfo);
+        return nullptr;
+    }
+#else
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(bundleInfo, abilityInfo)) {
         AdapterFree(abilityInfo.srcPath);
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return nullptr;
     }
+#endif
     AdapterFree(abilityInfo.srcPath);
     return bundleInfo;
 }
@@ -510,17 +678,48 @@ bool GtBundleParser::ConvertIconResToBundleInfo(const char *resPath, uint32_t ic
         AdapterFree(bigIconPath);
         return false;
     }
+
+    char *bigIconPngPathComp[] = {
+        bundleInfo->codePath, const_cast<char *>(ASSETS), relativeIconPath, const_cast<char *>(ICON_PNG_NAME)
+    };
+    char *smallIconPngPathComp[] = {
+        bundleInfo->codePath, const_cast<char *>(ASSETS), relativeIconPath, const_cast<char *>(SMALL_ICON_PNG_NAME)
+    };
+    char *bigIconPngPath = BundleUtil::Strscat(bigIconPngPathComp, sizeof(bigIconPngPathComp) / sizeof(char *));
+    if (bigIconPngPath == nullptr) {
+        Free(relativeIconPath);
+        return false;
+    }
+    char *smallIconPngPath = BundleUtil::Strscat(smallIconPngPathComp, sizeof(smallIconPngPathComp) / sizeof(char *));
+    if (smallIconPngPath == nullptr) {
+        Free(relativeIconPath);
+        AdapterFree(bigIconPngPath);
+        return false;
+    }
     Free(relativeIconPath);
-    if (!BundleUtil::IsFile(bigIconPath) || !BundleUtil::IsFile(smallIconPath)) {
+    bool isBigIconExisted = BundleUtil::IsFile(bigIconPath);
+    bool isSmallIconExisted = BundleUtil::IsFile(smallIconPath);
+    if ((!isBigIconExisted && !BundleUtil::IsFile(bigIconPngPath))||
+        (!isSmallIconExisted && !BundleUtil::IsFile(smallIconPngPath))) {
         AdapterFree(bigIconPath);
         AdapterFree(smallIconPath);
+        AdapterFree(bigIconPngPath);
+        AdapterFree(smallIconPngPath);
         return false;
     }
     // release bigIconPath and smallIconPath memory in bundleInfo first
     AdapterFree(bundleInfo->bigIconPath);
     AdapterFree(bundleInfo->smallIconPath);
-    bundleInfo->bigIconPath = bigIconPath;
-    bundleInfo->smallIconPath = smallIconPath;
+    if (isBigIconExisted) {
+        bundleInfo->bigIconPath = bigIconPath;
+    } else {
+        bundleInfo->bigIconPath = bigIconPngPath;
+    }
+    if (isSmallIconExisted) {
+        bundleInfo->smallIconPath = smallIconPath;
+    } else {
+        bundleInfo->smallIconPath = smallIconPngPath;
+    }
     return true;
 }
 
@@ -599,22 +798,37 @@ uint8_t GtBundleParser::SaveBundleInfo(const BundleProfile &bundleProfile, const
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
-
-    char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_JS_PATH)};
-    char *jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    char *jsPath = nullptr;
+    if (bundleProfile.srcPath == nullptr) {
+        char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_JS_PATH)};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    } else {
+        char *jsPathComp[] = {(*bundleInfo)->codePath, const_cast<char *>(ASSET_PATH), bundleProfile.srcPath};
+        jsPath = BundleUtil::Strscat(jsPathComp, sizeof(jsPathComp) / sizeof(char *));
+    }
     if (jsPath == nullptr) {
         BundleInfoUtils::FreeBundleInfo(*bundleInfo);
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
+
     AbilityInfo abilityInfo = {.srcPath = jsPath, .bundleName = (*bundleInfo)->bundleName};
     // set abilityInfo
+#ifdef _MINI_BMS_PARSE_METADATA_
+    if (!BundleInfoUtils::SetBundleInfoAbilityInfo(*bundleInfo, abilityInfo, bundleProfile)) {
+        AdapterFree(jsPath);
+        BundleInfoUtils::FreeBundleInfo(*bundleInfo);
+        *bundleInfo = nullptr;
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
+    }
+#else
     if (!BundleInfoUtils::SetBundleInfoAbilityInfo(*bundleInfo, abilityInfo)) {
         AdapterFree(jsPath);
         BundleInfoUtils::FreeBundleInfo(*bundleInfo);
         *bundleInfo = nullptr;
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
+#endif
     AdapterFree(jsPath);
     return ERR_OK;
 }

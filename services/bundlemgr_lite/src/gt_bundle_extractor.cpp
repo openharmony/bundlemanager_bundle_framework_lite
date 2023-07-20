@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -158,7 +158,8 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
 
         int32_t fileNameLen = strlen(fileName);
         if ((strlen(relativeFilePath) == 0 && (strcmp(fileName, PROFILE_NAME) == 0)) ||
-            !BundleUtil::StartWith(relativeFilePath, ASSET_JS_PATH)) {
+            (!BundleUtil::StartWith(relativeFilePath, ASSET_JS_PATH) &&
+            !BundleUtil::StartWith(relativeFilePath, NEW_ASSET_JS_PATH))) {
             if (!GtExtractorUtil::HasWrittenFile(path, relativeFilePath, fileName, fp, fileSize)) {
                 UI_Free(fileName);
                 UI_Free(relativeFilePath);
@@ -182,8 +183,8 @@ bool GtBundleExtractor::ExtractResourceFile(const char *path, int32_t fp, uint32
     return true;
 }
 
-uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName, char **label, char **smallIconPath,
-    char **bigIconPath)
+uint8_t GtBundleExtractor::ExtractInstallMsg(
+    const char *path, char **bundleName, char **label, char **smallIconPath, char **bigIconPath, uint8_t &actionService)
 {
 #ifdef _MINI_BMS_PERMISSION_
     RefreshAllServiceTimeStamp();
@@ -200,17 +201,6 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
 #else
     int32_t totalFileSize = BundleUtil::GetFileSize(path);
 #endif
-    char *emptyJsPathComp[] = {const_cast<char *>(TMP_RESOURCE_DIR), const_cast<char *>(ASSET_JS_PATH)};
-    char *emptyJsPath = BundleUtil::Strscat(emptyJsPathComp, sizeof(emptyJsPathComp) / sizeof(char *));
-    if (emptyJsPath == nullptr) {
-        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
-    }
-
-    if (!BundleUtil::MkDirs(emptyJsPath)) {
-        AdapterFree(emptyJsPath);
-        return ERR_APPEXECFWK_INSTALL_FAILED_CREATE_DATA_DIR_ERROR;
-    }
-    AdapterFree(emptyJsPath);
 
     int32_t fp = open(path, O_RDONLY, S_IREAD);
     if (fp < 0) {
@@ -237,12 +227,54 @@ uint8_t GtBundleExtractor::ExtractInstallMsg(const char *path, char **bundleName
     *label = Utils::Strdup(bundleInfo->label);
     *smallIconPath = Utils::Strdup(bundleInfo->smallIconPath);
     *bigIconPath = Utils::Strdup(bundleInfo->bigIconPath);
+    // find bundleInfo->abilityInfo->skills[i]->actions whether contain HOST_APDU_SERVICE
+    actionService = FindSkillService(bundleInfo->abilityInfo);
     if (*bundleName == nullptr || *label == nullptr || *smallIconPath == nullptr || *bigIconPath == nullptr) {
         BundleInfoUtils::FreeBundleInfo(bundleInfo);
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_ABILITIES_ERROR;
     }
     BundleInfoUtils::FreeBundleInfo(bundleInfo);
     return ERR_OK;
+}
+
+uint8_t GtBundleExtractor::ParseBundleInfoGetActionService(const char *bundleName)
+{
+    if (bundleName == nullptr) {
+        return ERR_OK;
+    }
+    BundleInfo *bundleInfo = OHOS::GtManagerService::GetInstance().QueryBundleInfo(bundleName);
+    if (bundleInfo == nullptr) {
+        return ERR_OK;
+    }
+    // find bundleInfo->abilityInfo->skills[i]->actions whether contain HOST_APDU_SERVICE
+    uint8_t actionService = FindSkillService(bundleInfo->abilityInfo);
+    return actionService;
+}
+uint8_t GtBundleExtractor::FindSkillService(AbilityInfo *abilityInfo)
+{
+    if (abilityInfo == nullptr) {
+        return 0;
+    }
+    for (int i = 0; i < SKILL_SIZE; i++) {
+        if (abilityInfo->skills[i] != nullptr) {
+            if (CompareStringArray(abilityInfo->skills[i]->actions, MAX_SKILL_ITEM)) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+uint8_t GtBundleExtractor::CompareStringArray(char *actions[], int count)
+{
+    for (int i = 0; i < count; i++) {
+        if (actions[i] == nullptr) {
+            continue;
+        }
+        if (strcmp(actions[i], SERVICE_NAME) == 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 uint8_t GtBundleExtractor::ExtractBundleParam(const char *path, int32_t &fpStart, char **bundleName)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,6 +44,7 @@ typedef struct {
     char *bigIconPath;
     InstallState installState;
     uint8_t installProcess;
+    uint8_t actionService;
 } BundleInstallMsg;
 
 typedef struct {
@@ -101,6 +102,32 @@ void UpdateBundleInfoList(void);
  *
  */
 uint8_t GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len);
+
+/**
+ * @brief Query qualified abilityInfo according to want.
+ *
+ * @param want The want provided by ActivityManagerService contains the actions fiels you want to query.
+ * @param abilityInfo Qualified abilityInfo.
+ * @param len Indicates the pointer to the number of {@link abilityInfo} objects obtained.
+ * @return Returns {@link ERR_OK} if this function is successfully called;
+ */
+uint8_t QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len);
+
+/**
+ * @brief Register an event callback to return the specified HCE tag.
+ *
+ * @param installerCallback callback function.
+ * @return Returns result if this function is successfully called;
+ */
+bool RegisterEvent(InstallerCallback installerCallback);
+
+/**
+ * @brief Unregister an event callback, which is used to cancel the RegisterEvent.
+ *
+ * @param installerCallback callback function.
+ * @return Returns result if this function is successfully called;
+ */
+bool UnregisterEvent(InstallerCallback installerCallback);
 
 /**
  * @brief Initializing preset application information.

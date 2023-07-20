@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,11 @@ private:
     static uint8_t ParseAbilityInfo(const cJSON *abilityInfoObjects, BundleProfile &bundleProfile,
         BundleRes &bundleRes);
     static uint8_t ParseModuleMetaData(const cJSON *moduleObject, BundleProfile &bundleProfile);
+    static uint8_t ParseAllAbilityInfo(const cJSON *abilityObjects, BundleProfile &bundleProfile);
+    static uint8_t ParsePerAbilityInfo(const cJSON *abilityObjects, AbilityInfo &abilityInfo);
+    static uint8_t ParseMetaData(const cJSON *moduleObject, MetaData *metaData[], int maxCount);
+    static uint8_t ParseAbilitySkills(const cJSON *abilityObjectItem, AbilityInfo &abilityInfo);
+    static uint8_t ParseOneSkill(const cJSON *skillObject, Skill &skill);
     static bool SetModuleInfos(const BundleProfile &bundleProfile, BundleInfo *bundleInfo);
     static uint8_t SaveBundleInfo(const BundleProfile &bundleProfile, const BundleRes &bundleRes,
         BundleInfo **bundleInfo);

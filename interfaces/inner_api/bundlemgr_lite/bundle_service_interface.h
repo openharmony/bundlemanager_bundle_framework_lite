@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -58,6 +58,9 @@ struct BmsSliteInterface {
     bool (*RegisterInstallerCallback)(InstallerCallback installerCallback);
     void (*UpdateBundleInfoList)();
     uint8_t (*GetBundleInfosNoReplication)(const int flags, BundleInfo **bundleInfos, int32_t *len);
+    uint8_t (*QueryAbilityInfos)(const Want *want, AbilityInfo **abilityInfo, int32_t *len);
+    bool (*RegisterEvent)(InstallerCallback installerCallback);
+    bool (*UnregisterEvent)(InstallerCallback installerCallback);
     PreAppList *(*InitPreAppInfo)(void);
     void (*InsertPreAppInfo)(const char *filePath, PreAppList *list);
     void (*SetPreAppInfo)(PreAppList *list);

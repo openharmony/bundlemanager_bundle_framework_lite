@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,8 +37,21 @@ void AbilityInfoUtils::CopyAbilityInfo(AbilityInfo *des, AbilityInfo src)
     SetAbilityInfoLabel(des, src.label);
 #else
     SetAbilityInfoSrcPath(des, src.srcPath);
+    SetAbilityInfoMetaData(des, src.metaData, METADATA_SIZE);
+    SetAbilityInfoSkill(des, src.skills);
 #endif
 }
+
+#ifdef _MINI_BMS_PARSE_METADATA_
+void AbilityInfoUtils::CopyBundleProfileToAbilityInfo(AbilityInfo *des, const BundleProfile &src)
+{
+    if (des == nullptr) {
+        return;
+    }
+    SetAbilityInfoMetaData(des, src.abilityInfos->metaData, METADATA_SIZE);
+    SetAbilityInfoSkill(des, src.abilityInfos->skills);
+}
+#endif
 
 bool AbilityInfoUtils::SetAbilityInfoBundleName(AbilityInfo *abilityInfo, const char *bundleName)
 {
@@ -127,6 +140,113 @@ bool AbilityInfoUtils::SetAbilityInfoSrcPath(AbilityInfo *abilityInfo, const cha
     AdapterFree(abilityInfo->srcPath);
     abilityInfo->srcPath = Utils::Strdup(srcPath);
     return abilityInfo->srcPath != nullptr;
+}
+
+bool AbilityInfoUtils::SetAbilityInfoMetaData(AbilityInfo *abilityInfo, MetaData **metaData, uint32_t numOfMetaData)
+{
+    if (abilityInfo == nullptr || metaData == nullptr || numOfMetaData > METADATA_SIZE) {
+        return false;
+    }
+    ClearAbilityInfoMetaData(abilityInfo->metaData, METADATA_SIZE);
+    for (uint32_t i = 0; i < numOfMetaData; i++) {
+        if (metaData[i] != nullptr) {
+            abilityInfo->metaData[i] = reinterpret_cast<MetaData *>(AdapterMalloc(sizeof(MetaData)));
+            if (abilityInfo->metaData[i] == nullptr ||
+                memset_s(abilityInfo->metaData[i], sizeof(MetaData), 0, sizeof(MetaData)) != EOK) {
+                ClearAbilityInfoMetaData(abilityInfo->metaData, i);
+                return false;
+            }
+            if (metaData[i]->name != nullptr) {
+                abilityInfo->metaData[i]->name = Utils::Strdup(metaData[i]->name);
+            }
+            if (metaData[i]->value != nullptr) {
+                abilityInfo->metaData[i]->value = Utils::Strdup(metaData[i]->value);
+            }
+            if (metaData[i]->extra != nullptr) {
+                abilityInfo->metaData[i]->extra = Utils::Strdup(metaData[i]->extra);
+            }
+            if ((metaData[i]->name != nullptr && abilityInfo->metaData[i]->name == nullptr) ||
+                (metaData[i]->value != nullptr && abilityInfo->metaData[i]->value == nullptr) ||
+                (metaData[i]->extra != nullptr && abilityInfo->metaData[i]->extra == nullptr)) {
+                ClearAbilityInfoMetaData(abilityInfo->metaData, i);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void AbilityInfoUtils::ClearStringArray(char *array[], int count)
+{
+    for (int i = 0; i < count; i++) {
+        if (array[i] == nullptr) {
+            continue;
+        }
+        AdapterFree(array[i]);
+    }
+}
+
+void AbilityInfoUtils::CopyStringArray(char *dst[], char *const src[], int count)
+{
+    for (int i = 0; i < count; i++) {
+        dst[i] = Utils::Strdup(src[i]);
+    }
+}
+
+bool AbilityInfoUtils::SetAbilityInfoSkill(AbilityInfo *abilityInfo, Skill * const skills[])
+{
+    if (abilityInfo == nullptr || skills == nullptr) {
+        return false;
+    }
+    for (int i = 0; i < SKILL_SIZE; i++) {
+        if (abilityInfo->skills[i] != nullptr) {
+            ClearStringArray(abilityInfo->skills[i]->entities, MAX_SKILL_ITEM);
+            ClearStringArray(abilityInfo->skills[i]->actions, MAX_SKILL_ITEM);
+            AdapterFree(abilityInfo->skills[i]);
+        }
+        if (skills[i] == nullptr) {
+            return false;
+        }
+        abilityInfo->skills[i] = (Skill *)AdapterMalloc(sizeof(Skill));
+        CopyStringArray(abilityInfo->skills[i]->entities, skills[i]->entities, MAX_SKILL_ITEM);
+        CopyStringArray(abilityInfo->skills[i]->actions, skills[i]->actions, MAX_SKILL_ITEM);
+    }
+    return true;
+}
+
+void AbilityInfoUtils::ClearExtendedInfo(AbilityInfo *abilityInfo)
+{
+    for (int i = 0; i < METADATA_SIZE; i++) {
+        if(abilityInfo->metaData[i] == nullptr) {
+            continue;
+        }
+        AdapterFree(abilityInfo->metaData[i]->name);
+        AdapterFree(abilityInfo->metaData[i]->value);
+        AdapterFree(abilityInfo->metaData[i]->extra);
+        AdapterFree(abilityInfo->metaData[i]);
+    }
+    for (int i = 0; i < SKILL_SIZE; i++) {
+        if(abilityInfo->skills[i] == nullptr) {
+            continue;
+        }
+        ClearStringArray(abilityInfo->skills[i]->entities, MAX_SKILL_ITEM);
+        ClearStringArray(abilityInfo->skills[i]->actions, MAX_SKILL_ITEM);
+        AdapterFree(abilityInfo->skills[i]);
+    }
+}
+void AbilityInfoUtils::ClearAbilityInfoMetaData(MetaData **metaData, uint32_t numOfMetaData)
+{
+    if (metaData == nullptr || numOfMetaData > METADATA_SIZE) {
+        return;
+    }
+    for (uint32_t i = 0; i < numOfMetaData; i++) {
+        if (metaData[i] != nullptr) {
+            AdapterFree(metaData[i]->name);
+            AdapterFree(metaData[i]->value);
+            AdapterFree(metaData[i]->extra);
+            AdapterFree(metaData[i]);
+        }
+    }
 }
 #endif
 } // OHOS

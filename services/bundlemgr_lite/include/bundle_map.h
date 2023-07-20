@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ public:
     bool Update(BundleInfo *bundleInfo);
     BundleInfo *Get(const char *bundleName) const;
     uint8_t GetBundleInfos(int32_t flags, BundleInfo **bundleInfos, int32_t *len) const;
+    uint8_t GetBundleInfosInner(List<BundleInfo *> &bundleInfos) const;
     uint8_t GetBundleInfosNoReplication(int32_t flags, BundleInfo **bundleInfos, int32_t *len) const;
     uint8_t GetBundleInfo(const char *bundleName, int32_t flags, BundleInfo &bundleInfo) const;
     void Erase(const char *bundleName);

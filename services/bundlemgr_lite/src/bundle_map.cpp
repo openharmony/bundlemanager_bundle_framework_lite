@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -201,6 +201,17 @@ uint8_t BundleMap::GetBundleInfos(int32_t flags, BundleInfo **bundleInfos, int32
 
     *len = bundleInfos_->Size();
     MutexRelease(&g_bundleListMutex);
+    return ERR_OK;
+}
+
+uint8_t BundleMap::GetBundleInfosInner(List<BundleInfo *> &bundleInfos) const
+{
+    if (bundleInfos_->IsEmpty()) {
+        return ERR_APPEXECFWK_QUERY_NO_INFOS;
+    }
+    for (auto node = bundleInfos_->Begin(); node != bundleInfos_->End(); node = node->next_) {
+        bundleInfos.PushBack(node->value_);
+    }
     return ERR_OK;
 }
 

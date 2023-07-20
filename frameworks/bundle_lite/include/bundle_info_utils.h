@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,9 @@
 #define OHOS_BUNDLEINFO_UTILS_H
 
 #include "bundle_info.h"
+#ifdef _MINI_BMS_PARSE_METADATA_
+#include "bundle_common.h"
+#endif
 
 namespace OHOS {
 struct BundleInfoUtils {
@@ -40,7 +43,11 @@ struct BundleInfoUtils {
     static void ClearAbilityInfos(AbilityInfo *abilityInfos, uint32_t numOfAbility);
 #else
     static bool SetBundleInfoSmallIconPath(BundleInfo *bundleInfo, const char *smallIconPath);
-    static bool SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, AbilityInfo abilityInfo);
+    static bool SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, const AbilityInfo &abilityInfo);
+#ifdef _MINI_BMS_PARSE_METADATA_
+    static bool SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, const AbilityInfo &abilityInfo,
+        const BundleProfile &bundleProfile);
+#endif
 #endif
 private:
     BundleInfoUtils() = default;

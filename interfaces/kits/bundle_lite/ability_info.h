@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,6 +43,7 @@
 
 #include <stdbool.h>
 #include "stdint.h"
+#include "module_info.h"
 
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
 /**
@@ -97,6 +98,16 @@ typedef struct {
 
 #endif
 
+#define MAX_SKILL_ITEM 4
+/**
+ * @brief Defines the skill information.
+ */
+typedef struct {
+    char *entities[MAX_SKILL_ITEM];
+    char *actions[MAX_SKILL_ITEM];
+} Skill;
+#define SKILL_SIZE 16
+
 /**
  * @brief Defines the ability information.
  */
@@ -140,6 +151,9 @@ typedef struct {
 #endif
     /** Pointer to the application bundle name */
     char *bundleName;
+    /** metadata/skills for ablity info. */
+    MetaData *metaData[METADATA_SIZE];
+    Skill *skills[SKILL_SIZE];
 } AbilityInfo;
 
 #ifdef __cplusplus

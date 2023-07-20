@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,7 @@ extern "C" {
 
 namespace OHOS {
 const char PROFILE_NAME[] = "config.json";
+const char SERVICE_NAME[] = "ohos.nfc.cardemulation.action.HOST_APDU_SERVICE";
 const char JSON_SUFFIX[] = ".json";
 const char PATH_SEPARATOR[] = "/";
 const char FILE_DELIMITER[] = "_";
@@ -76,6 +77,9 @@ const char PROFILE_KEY_VERSION_NAME[] = "name";
 const char PROFILE_KEY_APIVERSION[] = "apiVersion";
 const char PROFILE_KEY_APIVERSION_COMPATIBLE[] = "compatible";
 const char PROFILE_KEY_APIVERSION_TARGET[] = "target";
+const char PROFILE_KEY_SKILLS[] = "skills";
+const char PROFILE_KEY_SKILLS_ENTITIES[] = "entities";
+const char PROFILE_KEY_SKILLS_ACTIONS[] = "actions";
 // deviceConfig
 const char PROFILE_KEY_DEVICECONFIG[] = "deviceConfig";
 const char PROFILE_KEY_DEVICECONFIG_DEFAULT[] = "default";
@@ -103,6 +107,7 @@ const char PROFILE_KEY_MODULE_ABILITY_TYPE[] = "type";
 const char PROFILE_KEY_MODULE_ABILITY_LAUNCHTYPE[] = "launchType";
 const char PROFILE_KEY_MODULE_ABILITY_VISIBLE[] = "visible";
 const char PROFILE_KEY_MODULE_ABILITY_DEVICE_CAP[] = "deviceCapability";
+const char PROFILE_KEY_MODULE_ABILITY_SRC_PATH[] = "srcPath";
 // js config
 const char PROFILE_KEY_JS[] = "js";
 
@@ -158,8 +163,12 @@ const char JSON_PATH_NO_SLASH_END[] = "user/ace/etc/bundles";
 // store bundle permissions for IAM
 const char PERMISSIONS_PATH[] = "user/ace/etc/permissions";
 const char ASSET_JS_PATH[] = "/assets/js/default";
+const char NEW_ASSET_JS_PATH[] = "/assets/js/MainAbility";
+const char ASSET_PATH[] = "/assets/js/";
 const char ICON_NAME[] = "/icon.bin";
 const char SMALL_ICON_NAME[] = "/icon_small.bin";
+const char ICON_PNG_NAME[] = "/icon.png.bin";
+const char SMALL_ICON_PNG_NAME[] = "/icon_small.png.bin";
 const char DEFAULT_ICON_SETTING[] = "$media:icon";
 const char INSTALL_FILE_SUFFIX[] = ".bin";
 const char TMP_RESOURCE_DIR[] = "user/ace/run/tmpResource";
@@ -231,13 +240,12 @@ struct BundleProfile {
     char *vendor;
     char *label;
     char *iconPath;
+    char *srcPath = nullptr;
     ProfileVersion profileVersion;
     ProfileApiVersion profileApiVersion;
     ModuleInfo moduleInfo;
-#ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
     AbilityInfo *abilityInfos;
     uint32_t numOfAbility;
-#endif
 };
 
 struct Permissions {
