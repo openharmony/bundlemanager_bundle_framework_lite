@@ -550,13 +550,17 @@ bool GtBundleParser::ConvertIconResToBundleInfo(const char *resPath, uint32_t ic
     AdapterFree(bundleInfo->smallIconPath);
     if (isBigIconExisted) {
         bundleInfo->bigIconPath = bigIconPath;
+        AdapterFree(bigIconPngPath);
     } else {
         bundleInfo->bigIconPath = bigIconPngPath;
+        AdapterFree(bigIconPath);
     }
     if (isSmallIconExisted) {
         bundleInfo->smallIconPath = smallIconPath;
+        AdapterFree(smallIconPngPath);
     } else {
         bundleInfo->smallIconPath = smallIconPngPath;
+        AdapterFree(smallIconPath);
     }
     return true;
 }
