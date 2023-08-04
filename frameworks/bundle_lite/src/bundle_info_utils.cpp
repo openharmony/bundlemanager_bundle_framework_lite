@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -309,7 +309,7 @@ bool BundleInfoUtils::SetBundleInfoSmallIconPath(BundleInfo *bundleInfo, const c
     return bundleInfo->smallIconPath != nullptr;
 }
 
-bool BundleInfoUtils::SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, AbilityInfo abilityInfo)
+bool BundleInfoUtils::SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, const AbilityInfo &abilityInfo)
 {
     if (bundleInfo == nullptr) {
         return false;
@@ -327,5 +327,26 @@ bool BundleInfoUtils::SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, AbilityIn
     AbilityInfoUtils::CopyAbilityInfo(bundleInfo->abilityInfo, abilityInfo);
     return true;
 }
+
+#ifdef _MINI_BMS_PARSE_METADATA_
+bool BundleInfoUtils::SetBundleInfoAbilityInfo(BundleInfo *bundleInfo, const AbilityInfo &abilityInfo,
+    const BundleProfile &bundleProfile)
+{
+    if (bundleInfo == nullptr) {
+        return false;
+    }
+    ClearAbilityInfo(bundleInfo->abilityInfo);
+    AdapterFree(bundleInfo->abilityInfo);
+    bundleInfo->abilityInfo = reinterpret_cast<AbilityInfo *>(AdapterMalloc(sizeof(AbilityInfo)));
+    if (bundleInfo->abilityInfo ==nullptr ||
+    memset_s(bundleInfo->abilityInfo, sizeof(AbilityInfo), 0, sizeof(AbilityInfo)) != EOK) {
+        AdapterFree(bundleInfo->abilityInfo);
+        return false;
+    }
+    AbilityInfoUtils::CopyAbilityInfo(bundleInfo->abilityInfo, abilityInfo);
+    AbilityInfoUtils::CopyBundleProfileToAbilityInfo(bundleInfo->abilityInfo, bundleProfile);
+    return true;
+}
+#endif
 #endif
 } // OHOS

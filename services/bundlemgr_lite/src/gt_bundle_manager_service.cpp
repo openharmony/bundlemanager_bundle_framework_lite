@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,6 +56,7 @@ GtManagerService::GtManagerService()
     preAppList_ = nullptr;
     updateFlag_ = false;
     oldVersionCode_ = -1;
+    listenList_ = new List<InstallerCallback>();
 }
 
 GtManagerService::~GtManagerService()
@@ -64,6 +65,8 @@ GtManagerService::~GtManagerService()
     installer_ = nullptr;
     delete bundleResList_;
     bundleResList_ = nullptr;
+    delete listenList_;
+    listenList_ = nullptr;
 }
 
 bool GtManagerService::Install(const char *hapPath, const InstallParam *installParam,
@@ -101,11 +104,18 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
         return false;
     }
     // set bundleName、label、smallIconPath、bigIconPath in bundleInstallMsg_
-    uint8_t ret = GtBundleExtractor::ExtractInstallMsg(path, &(bundleInstallMsg_->bundleName),
-        &(bundleInstallMsg_->label), &(bundleInstallMsg_->smallIconPath),
-        &(bundleInstallMsg_->bigIconPath));
+    uint8_t ret = GtBundleExtractor::ExtractInstallMsg(path,
+        &(bundleInstallMsg_->bundleName),
+        &(bundleInstallMsg_->label),
+        &(bundleInstallMsg_->smallIconPath),
+        &(bundleInstallMsg_->bigIconPath),
+        bundleInstallMsg_->actionService);
     if (ret != 0) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Install extract install msg failed, ret is %{public}d", ret);
+        if (bundleInstallMsg_->actionService) {
+            HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] install fail and actionService is on.");
+            (void)ReportHceInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED);
+        }
         char *name = strrchr(path, '/');
         bundleInstallMsg_->bundleName = Utils::Strdup(name + 1);
         (void) ReportInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED, installerCallback);
@@ -137,9 +147,17 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Install ret is %d", ret);
     if (ret == 0) {
-        (void) ReportInstallCallback(ret, BUNDLE_INSTALL_OK, BMS_INSTALLATION_COMPLETED, installerCallback);
+        (void)ReportInstallCallback(ret, BUNDLE_INSTALL_OK, BMS_INSTALLATION_COMPLETED, installerCallback);
+        if (bundleInstallMsg_->actionService) {
+            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] install success and actionService is on.");
+            (void)ReportHceInstallCallback(ret, BUNDLE_INSTALL_OK, BMS_INSTALLATION_COMPLETED);
+        }
     } else {
-        (void) ReportInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED, installerCallback);
+        (void)ReportInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED, installerCallback);
+        if (bundleInstallMsg_->actionService) {
+            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] install fail and actionService is on.");
+            (void)ReportHceInstallCallback(ret, BUNDLE_INSTALL_FAIL, BMS_INSTALLATION_COMPLETED);
+        }
     }
     SetCurrentBundle(nullptr);
     ClearSystemBundleInstallMsg();
@@ -170,9 +188,10 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
         return false;
     }
     SetCurrentBundle(innerBundleName);
-
-    (void) ReportUninstallCallback(OPERATION_DOING, BUNDLE_UNINSTALL_DOING, innerBundleName,
-        BMS_UNINSTALLATION_START, installerCallback);
+    // obtain the skill.action whether contain HOST_APDU_SERVICE
+    uint8_t actionService = GtBundleExtractor::ParseBundleInfoGetActionService(innerBundleName);
+    (void) ReportUninstallCallback(
+        OPERATION_DOING, BUNDLE_UNINSTALL_DOING, innerBundleName, BMS_UNINSTALLATION_START, installerCallback);
 #ifdef _MINI_BMS_PERMISSION_
     DisableServiceWdg();
     RefreshAllServiceTimeStamp();
@@ -184,11 +203,19 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
 #endif
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Uninstall ret is %d", ret);
     if (ret == 0) {
-        (void) ReportUninstallCallback(ret, BUNDLE_UNINSTALL_OK, innerBundleName,
-            BMS_INSTALLATION_COMPLETED, installerCallback);
+        (void) ReportUninstallCallback(
+            ret, BUNDLE_UNINSTALL_OK, innerBundleName, BMS_INSTALLATION_COMPLETED, installerCallback);
+        if (actionService != 0) {
+            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] uninstall success and actionService is on.");
+            (void) ReportHceUninstallCallback(ret, BUNDLE_UNINSTALL_OK, innerBundleName, BMS_INSTALLATION_COMPLETED);
+        }
     } else {
-        (void) ReportUninstallCallback(ret, BUNDLE_UNINSTALL_FAIL, innerBundleName,
-            BMS_INSTALLATION_COMPLETED, installerCallback);
+        (void) ReportUninstallCallback(
+            ret, BUNDLE_UNINSTALL_FAIL, innerBundleName, BMS_INSTALLATION_COMPLETED, installerCallback);
+        if (actionService != 0) {
+            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] uninstall fail and actionService is on.");
+            (void) ReportHceUninstallCallback(ret, BUNDLE_UNINSTALL_FAIL, innerBundleName, BMS_INSTALLATION_COMPLETED);
+        }
     }
 
     SetCurrentBundle(nullptr);
@@ -265,7 +292,99 @@ uint8_t GtManagerService::QueryAbilityInfo(const Want *want, AbilityInfo *abilit
     return 1;
 }
 
-uint8_t GtManagerService::GetBundleInfo(const char *bundleName, int32_t flags, BundleInfo& bundleInfo)
+uint8_t GtManagerService::QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len)
+{
+    if (want == nullptr || abilityInfo == nullptr || want->actions == nullptr || bundleMap_ == nullptr) {
+        return 0;
+    }
+    int32_t abilityInfoLen = 0;
+    List<BundleInfo *> *bundleInfos_ = new List<BundleInfo *>();
+    bundleMap_->GetBundleInfosInner(*bundleInfos_);
+
+    for (auto node = bundleInfos_->Begin(); node != bundleInfos_->End(); node = node->next_) {
+        BundleInfo *info = node->value_;
+        if (info == nullptr || info->abilityInfo == nullptr) {
+            continue;
+        }
+        // find bundleInfo->abilityInfo->skills[i]->actions whether contain target string
+        if (MatchSkills(want, info->abilityInfo->skills)) {
+            abilityInfoLen++;
+        }
+    }
+    // Request memory
+    AbilityInfo *infos = reinterpret_cast<AbilityInfo *>(AdapterMalloc(sizeof(AbilityInfo) * abilityInfoLen));
+    if (infos == nullptr ||
+        memset_s(infos, sizeof(AbilityInfo) * abilityInfoLen, 0, sizeof(AbilityInfo) * abilityInfoLen) != EOK) {
+        AdapterFree(infos);
+        return ERR_APPEXECFWK_QUERY_INFOS_INIT_ERROR;
+    }
+    *abilityInfo = infos;
+    // copy the abilityInfo from bundleInfos
+    for (auto node = bundleInfos_->Begin(); node != bundleInfos_->End(); node = node->next_) {
+        BundleInfo *info = node->value_;
+        if (info == nullptr || info->abilityInfo == nullptr) {
+            continue;
+        }
+        // find bundleInfo->abilityInfo->skills[i]->actions whether contain HOST_APDU_SERVICE
+        if (MatchSkills(want, info->abilityInfo->skills)) {
+            OHOS::AbilityInfoUtils::CopyAbilityInfo(infos++, *(info->abilityInfo));
+        }
+    }
+    *len = abilityInfoLen;
+    return 1;
+}
+bool GtManagerService::MatchSkills(const Want *want, Skill *const skills[])
+{
+    if (skills == nullptr || want == nullptr) {
+        return false;
+    }
+    for (int32_t i = 0; i < SKILL_SIZE; i++) {
+        if (skills[i] == nullptr) {
+            return false;
+        }
+        if (isMatchActions(want->actions, skills[i]->actions) || isMatchEntities(want->entities, skills[i]->entities)) {
+            return true;
+        }
+    }
+    return false;
+}
+bool GtManagerService::isMatchActions(const char *actions, char *const skillActions[])
+{
+    if (actions == nullptr && skillActions == nullptr) {
+        return true;
+    }
+    for (int32_t i = 0; i < MAX_SKILL_ITEM; i++) {
+        if (skillActions[i] == nullptr) {
+            return false;
+        }
+        if (isMatch(actions, skillActions[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+bool GtManagerService::isMatchEntities(const char *entities, char *const skillEntities[])
+{
+    if (entities == nullptr) {
+        return true;
+    }
+    for (int32_t i = 0; i < MAX_SKILL_ITEM; i++) {
+        if (skillEntities[i] == nullptr) {
+            return false;
+        }
+        if (isMatch(entities, skillEntities[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+bool GtManagerService::isMatch(const char *dst, const char *src)
+{
+    // compare whether is ohos.nfc.cardemulation.action.HOST_APDU_SERVICE
+    return strcmp(dst, src) == 0;
+}
+
+uint8_t GtManagerService::GetBundleInfo(const char *bundleName, int32_t flags, BundleInfo &bundleInfo)
 {
     if (bundleMap_ == nullptr) {
         return ERR_APPEXECFWK_OBJECT_NULL;
@@ -876,14 +995,7 @@ void GtManagerService::TransformJsToBc(const char *codePath, const char *bundleJ
     if (jsPath == nullptr) {
         return;
     }
-    if (!BundleUtil::IsDir(jsPath)) {
-        AdapterFree(jsPath);
-        char *newJsPathComp[] = {const_cast<char *>(codePath), const_cast<char *>(NEW_ASSET_JS_PATH)};
-        jsPath = BundleUtil::Strscat(newJsPathComp, sizeof(newJsPathComp) / sizeof(char *));
-        if (jsPath == nullptr) {
-            return;
-        }
-    }
+
     EXECRES result = walk_directory(jsPath);
     HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] transform js to bc, result is %d", result);
     if (result != EXCE_ACE_JERRY_EXEC_OK) {
@@ -987,8 +1099,81 @@ void GtManagerService::ReduceNumOfThirdBundles()
     installedThirdBundleNum_--;
 }
 
-int32_t GtManagerService::ReportInstallCallback(uint8_t errCode, uint8_t installState,
-    uint8_t process, InstallerCallback installerCallback)
+bool GtManagerService::RegisterEvent(InstallerCallback listenCallback)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] RegisterListen RegisterEvent");
+    if (listenCallback == nullptr) {
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] RegisterListen is fail because is null");
+        return false;
+    }
+    listenList_->PushBack(listenCallback);
+    return true;
+}
+
+bool GtManagerService::UnregisterEvent(InstallerCallback listenCallback)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] UnregisterListen UnregisterEvent");
+    if (listenCallback == nullptr) {
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] UnregisterListen is fail because is null");
+        return false;
+    }
+    for (auto node = listenList_->Begin(); node != listenList_->End(); node = node->next_) {
+        if (node == nullptr) {
+            HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] Listener not found");
+            return false;
+        }
+        if ((*(node->value_)) == listenCallback) {
+            listenList_->Remove(node);
+            return true;
+        }
+    }
+    return false;
+}
+int32_t GtManagerService::ReportHceInstallCallback(uint8_t errCode, uint8_t installState, uint8_t process)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] reportListener ReportHceInstallCallback");
+    BundleInstallMsg *bundleInstallMsg = reinterpret_cast<BundleInstallMsg *>(AdapterMalloc(sizeof(BundleInstallMsg)));
+    if (memset_s(bundleInstallMsg, sizeof(BundleInstallMsg), 0, sizeof(BundleInstallMsg)) != EOK) {
+        AdapterFree(bundleInstallMsg);
+    }
+    if (bundleInstallMsg == nullptr) {
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] ReportHceInstallCallback is fail because bundleInstallMsg is null");
+        return -1;
+    }
+    bundleInstallMsg_->installState = static_cast<InstallState>(installState);
+    bundleInstallMsg_->installProcess = process;
+    bundleInstallMsg->installState = bundleInstallMsg_->installState;
+    bundleInstallMsg->installProcess = bundleInstallMsg_->installProcess;
+    bundleInstallMsg->bundleName = bundleInstallMsg_->bundleName;
+    for (auto node = listenList_->Begin(); node != listenList_->End(); node = node->next_) {
+        (*(node->value_))(errCode, bundleInstallMsg);
+    }
+    return 0;
+}
+
+int32_t GtManagerService::ReportHceUninstallCallback(
+    uint8_t errCode, uint8_t installState, char *bundleName, uint8_t process)
+{
+    HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] unReportListener ReportHceUninstallCallback");
+    BundleInstallMsg *bundleInstallMsg = reinterpret_cast<BundleInstallMsg *>(AdapterMalloc(sizeof(BundleInstallMsg)));
+    if (memset_s(bundleInstallMsg, sizeof(BundleInstallMsg), 0, sizeof(BundleInstallMsg)) != EOK) {
+        AdapterFree(bundleInstallMsg);
+    }
+    if (bundleInstallMsg == nullptr) {
+        HILOG_INFO(HILOG_MODULE_AAFWK, "[BMS] ReportHceUninstallCallback is fail because bundleInstallMsg is null");
+        return -1;
+    }
+    bundleInstallMsg->installState = static_cast<InstallState>(installState);
+    bundleInstallMsg->installProcess = process;
+    bundleInstallMsg->bundleName = bundleName;
+    for (auto node = listenList_->Begin(); node != listenList_->End(); node = node->next_) {
+        (*(node->value_))(errCode, bundleInstallMsg);
+    }
+    return 0;
+}
+
+int32_t GtManagerService::ReportInstallCallback(
+    uint8_t errCode, uint8_t installState, uint8_t process, InstallerCallback installerCallback)
 {
     if (bundleInstallMsg_ == nullptr) {
         return -1;

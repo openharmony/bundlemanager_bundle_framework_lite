@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,10 +27,14 @@ public:
     static char *ExtractHapProfile(int32_t fp, uint32_t totalFileSize);
     static uint8_t ExtractBundleParam(const char *path, int32_t &fpStart, char **bundleName);
     static uint8_t ExtractInstallMsg(const char *path, char **bundleName, char **label, char **smallIconPath,
-        char **bigIconPath);
+        char **bigIconPath, uint8_t &actionService);
+    static uint8_t ParseBundleInfoGetActionService(const char *bundleName);
+
 private:
     static uint8_t ExtractFileDataPos(int32_t fp, uint64_t &filePos);
     static bool ExtractResourceFile(const char *path, int32_t fp, uint32_t totalFileSize);
+    static uint8_t FindSkillService(AbilityInfo *abilityInfo);
+    static uint8_t CompareStringArray(char *actions[], int count);
 };
 } // namespace OHOS
 #endif // OHOS_GT_BUNDLE_EXTRACTOR_H

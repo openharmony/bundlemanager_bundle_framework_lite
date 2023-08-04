@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,7 @@ extern "C" {
 
 namespace OHOS {
 const char PROFILE_NAME[] = "config.json";
+const char SERVICE_NAME[] = "ohos.nfc.cardemulation.action.HOST_APDU_SERVICE";
 const char JSON_SUFFIX[] = ".json";
 const char PATH_SEPARATOR[] = "/";
 const char FILE_DELIMITER[] = "_";
@@ -76,6 +77,9 @@ const char PROFILE_KEY_VERSION_NAME[] = "name";
 const char PROFILE_KEY_APIVERSION[] = "apiVersion";
 const char PROFILE_KEY_APIVERSION_COMPATIBLE[] = "compatible";
 const char PROFILE_KEY_APIVERSION_TARGET[] = "target";
+const char PROFILE_KEY_SKILLS[] = "skills";
+const char PROFILE_KEY_SKILLS_ENTITIES[] = "entities";
+const char PROFILE_KEY_SKILLS_ACTIONS[] = "actions";
 // deviceConfig
 const char PROFILE_KEY_DEVICECONFIG[] = "deviceConfig";
 const char PROFILE_KEY_DEVICECONFIG_DEFAULT[] = "default";
@@ -240,10 +244,8 @@ struct BundleProfile {
     ProfileVersion profileVersion;
     ProfileApiVersion profileApiVersion;
     ModuleInfo moduleInfo;
-#ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
     AbilityInfo *abilityInfos;
     uint32_t numOfAbility;
-#endif
 };
 
 struct Permissions {

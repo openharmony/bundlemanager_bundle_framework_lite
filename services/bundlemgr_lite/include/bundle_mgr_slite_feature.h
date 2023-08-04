@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,9 @@ public:
     static bool RegisterInstallerCallback(InstallerCallback installerCallback);
     static void UpdateBundleInfoList();
     static uint8_t GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len);
+    static uint8_t QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len);
+    static bool RegisterEvent(InstallerCallback installerCallback);
+    static bool UnregisterEvent(InstallerCallback installerCallback);
     static PreAppList *InitPreAppInfo();
     static void InsertPreAppInfo(const char *filePath, PreAppList *list);
     static void SetPreAppInfo(PreAppList *list);

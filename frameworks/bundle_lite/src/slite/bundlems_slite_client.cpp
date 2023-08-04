@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -227,6 +227,39 @@ uint8_t BundleMsClient::GetBundleInfosNoReplication (const int flags, BundleInfo
         return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
     }
     return bmsProxy_->GetBundleInfosNoReplication(flags, bundleInfos, len);
+}
+
+uint8_t BundleMsClient::QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len) const
+{
+    if (want == nullptr || (abilityInfo == nullptr)) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
+    if (!Initialize()) {
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
+    }
+    return bmsProxy_->QueryAbilityInfos(want, abilityInfo, len);
+}
+
+bool BundleMsClient::RegisterEvent(InstallerCallback installerCallback) const
+{
+    if (installerCallback == nullptr) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
+    if (!Initialize()) {
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
+    }
+    return bmsProxy_->RegisterEvent(installerCallback);
+}
+
+bool BundleMsClient::UnregisterEvent(InstallerCallback installerCallback) const
+{
+    if (installerCallback == nullptr) {
+        return ERR_APPEXECFWK_QUERY_PARAMETER_ERROR;
+    }
+    if (!Initialize()) {
+        return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
+    }
+    return bmsProxy_->UnregisterEvent(installerCallback);
 }
 
 PreAppList *BundleMsClient::InitPreAppInfo () const

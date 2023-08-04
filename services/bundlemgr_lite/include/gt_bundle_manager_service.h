@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -43,6 +43,7 @@ typedef enum {
     BUNDLE_UPDATE,
 } BundleState;
 
+void RegisterListenCallbackFunc(const uint8_t resultCode, const void *resultMessage);
 class GtManagerService {
 public:
     static GtManagerService &GetInstance()
@@ -53,7 +54,8 @@ public:
     bool Install(const char *hapPath, const InstallParam *installParam, InstallerCallback installerCallback);
     bool Uninstall(const char *bundleName, const InstallParam *installParam, InstallerCallback installerCallback);
     uint8_t QueryAbilityInfo(const Want *want, AbilityInfo *abilityInfo);
-    uint8_t GetBundleInfo(const char *bundleName, int32_t flags, BundleInfo& bundleInfo);
+    uint8_t QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len);
+    uint8_t GetBundleInfo(const char *bundleName, int32_t flags, BundleInfo &bundleInfo);
     uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len);
     uint8_t GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len);
     void ScanPackages();
@@ -68,16 +70,18 @@ public:
     void ReportInstallProcess(const char *bundleName, uint8_t bundleStyle, uint8_t process);
     void AddNumOfThirdBundles();
     void ReduceNumOfThirdBundles();
-    int32_t ReportInstallCallback(uint8_t errCode, uint8_t installState,
-        uint8_t process, InstallerCallback installerCallback);
-    int32_t ReportUninstallCallback(uint8_t errCode, uint8_t installState, char *bundleName,
-        uint8_t process, InstallerCallback installerCallback);
+    int32_t ReportInstallCallback(
+        uint8_t errCode, uint8_t installState, uint8_t process, InstallerCallback installerCallback);
+    int32_t ReportUninstallCallback(
+        uint8_t errCode, uint8_t installState, char *bundleName, uint8_t process, InstallerCallback installerCallback);
     bool GetInstallState(const char *bundleName, InstallState *installState, uint8_t *installProcess);
     uint32_t GetBundleSize(const char *bundleName);
     bool RegisterInstallerCallback(InstallerCallback installerCallback);
     PreAppList *InitPreAppInfo(void);
     void InsertPreAppInfo(const char *filePath, PreAppList *list);
     void SetPreAppInfo(PreAppList *list);
+    bool RegisterEvent(InstallerCallback installerCallback);
+    bool UnregisterEvent(InstallerCallback installerCallback);
 
 private:
     GtManagerService();
@@ -100,6 +104,12 @@ private:
     void InstallPreBundle(List<ToBeInstalledApp *> systemPathList, InstallerCallback installerCallback);
     void QueryPreAppInfo(const char *appDir, PreAppList *list);
     void FreePreAppInfo(const PreAppList *list);
+    int32_t ReportHceInstallCallback(uint8_t errCode, uint8_t installState, uint8_t process);
+    int32_t ReportHceUninstallCallback(uint8_t errCode, uint8_t installState, char *bundleName, uint8_t process);
+    static bool MatchSkills(const Want *want, Skill *const skills[]);
+    static bool isMatchActions(const char *actions, char *const skillActions[]);
+    static bool isMatchEntities(const char *entities, char *const skillEntities[]);
+    static bool isMatch(const char *dst, const char *src);
 
     GtBundleInstaller *installer_;
     BundleMap *bundleMap_;
@@ -111,6 +121,7 @@ private:
     PreAppList *preAppList_;
     bool updateFlag_;
     int32_t oldVersionCode_;
+    List<InstallerCallback> *listenList_;
 };
 }
 

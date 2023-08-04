@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -278,6 +278,9 @@ enum AppexecfwkErrors {
 
     /** Failed to install the application due to a request sending error. */
     ERR_APPEXECFWK_INSTALL_FAILED_SEND_REQUEST_ERROR,
+
+    /** Failed to parse the ability skill*/
+    ERR_APPEXECFWK_INSTALL_FAILED_PARSE_SKILLS_ERROR,
 
     /** Failed to uninstall the application due to an internal error. */
     ERR_APPEXECFWK_UNINSTALL_FAILED_INTERNAL_ERROR = 90,

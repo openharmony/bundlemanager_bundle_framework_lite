@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,9 @@ BundleMgrSliteFeatureImpl g_bmsSliteImpl = {
     .RegisterInstallerCallback = BundleMgrSliteFeature::RegisterInstallerCallback,
     .UpdateBundleInfoList = BundleMgrSliteFeature::UpdateBundleInfoList,
     .GetBundleInfosNoReplication = BundleMgrSliteFeature::GetBundleInfosNoReplication,
+    .QueryAbilityInfos = BundleMgrSliteFeature::QueryAbilityInfos,
+    .RegisterEvent = BundleMgrSliteFeature::RegisterEvent,
+    .UnregisterEvent = BundleMgrSliteFeature::UnregisterEvent,
     .InitPreAppInfo = BundleMgrSliteFeature::InitPreAppInfo,
     .InsertPreAppInfo = BundleMgrSliteFeature::InsertPreAppInfo,
     .SetPreAppInfo = BundleMgrSliteFeature::SetPreAppInfo,
@@ -146,6 +149,21 @@ void BundleMgrSliteFeature::UpdateBundleInfoList()
 uint8_t BundleMgrSliteFeature::GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len)
 {
     return OHOS::GtManagerService::GetInstance().GetBundleInfosNoReplication(flags, bundleInfos, len);
+}
+
+uint8_t BundleMgrSliteFeature::QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len)
+{
+    return OHOS::GtManagerService::GetInstance().QueryAbilityInfos(want, abilityInfo, len);
+}
+
+bool BundleMgrSliteFeature::RegisterEvent(InstallerCallback installerCallback)
+{
+    return OHOS::GtManagerService::GetInstance().RegisterEvent(installerCallback);
+}
+
+bool BundleMgrSliteFeature::UnregisterEvent(InstallerCallback installerCallback)
+{
+    return OHOS::GtManagerService::GetInstance().UnregisterEvent(installerCallback);
 }
 
 PreAppList *BundleMgrSliteFeature::InitPreAppInfo()

@@ -26,4 +26,5 @@ utils_lite_path = "//commonlibrary/utils_lite"
 declare_args() {
   enable_ohos_bundle_manager_service = false
   enable_ohos_bundle_manager_service_permission = false
+  enable_ohos_bundle_manager_service_parse_metadata = false
 }

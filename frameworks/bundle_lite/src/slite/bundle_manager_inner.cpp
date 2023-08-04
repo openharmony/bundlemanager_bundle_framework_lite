@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,6 +42,21 @@ void UpdateBundleInfoList(void)
 uint8_t GetBundleInfosNoReplication(const int flags, BundleInfo **bundleInfos, int32_t *len)
 {
     return OHOS::BundleMsClient::GetInstance().GetBundleInfosNoReplication(flags, bundleInfos, len);
+}
+
+uint8_t QueryAbilityInfos(const Want *want, AbilityInfo **abilityInfo, int32_t *len)
+{
+    return OHOS::BundleMsClient::GetInstance().QueryAbilityInfos(want, abilityInfo, len);
+}
+
+bool RegisterEvent(InstallerCallback installerCallback)
+{
+    return OHOS::BundleMsClient::GetInstance().RegisterEvent(installerCallback);
+}
+
+bool UnregisterEvent(InstallerCallback installerCallback)
+{
+    return OHOS::BundleMsClient::GetInstance().UnregisterEvent(installerCallback);
 }
 
 PreAppList *InitPreAppInfo(void)
