@@ -1194,6 +1194,7 @@ int32_t GtManagerService::ReportInstallCallback(
     bundleInstallMsg->smallIconPath = bundleInstallMsg_->smallIconPath;
     bundleInstallMsg->bigIconPath = bundleInstallMsg_->bigIconPath;
     (*installerCallback)(errCode, bundleInstallMsg);
+    AdapterFree(bundleInstallMsg);
     return 0;
 }
 
@@ -1211,6 +1212,7 @@ int32_t GtManagerService::ReportUninstallCallback(uint8_t errCode, uint8_t insta
     bundleInstallMsg->bundleName = bundleName;
     bundleInstallMsg->installProcess = process;
     (*installerCallback)(errCode, bundleInstallMsg);
+    AdapterFree(bundleInstallMsg);
     return 0;
 }
 
