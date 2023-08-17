@@ -24,7 +24,7 @@
             "components": [
             "ability_lite",
             "utils_lite",
-            "hilog",
+            "hilog_lite",
             "permission_lite",
             "samgr_lite",
             "resource_management_lite",
