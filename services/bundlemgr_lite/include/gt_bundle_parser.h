@@ -34,6 +34,8 @@ public:
 private:
     static uint8_t ParseJsonInfo(const cJSON *appObject, const cJSON *configObject, const cJSON *moduleObject,
         BundleProfile &bundleProfile, BundleRes &bundleRes);
+    static uint8_t CheckApiVersion(const cJSON *appObject, BundleProfile &bundleProfile);
+    static uint8_t CheckApi10Version(int32_t compatibleApiVersion);
     static BundleInfo *CreateBundleInfo(const char *path, const BundleProfile &bundleProfile,
         const BundleRes &bundleRes);
     static bool ConvertIconResToBundleInfo(const char *resPath, uint32_t iconId, BundleInfo *bundleInfo);
