@@ -15,6 +15,9 @@
 
 #include "gt_bundle_parser.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "ability_info_utils.h"
 #include "adapter.h"
 #include "appexecfwk_errors.h"
@@ -34,6 +37,12 @@
 
 namespace OHOS {
 const int32_t BASE_API_VERSION = 3;
+const int32_t API_VERSION_MASK = 1000;
+const char *DEVICE_API_VERSION_KEY = "const.product.os.dist.apiversion";
+const int32_t DEVICE_API_VERSION_LEN = 16;
+const int32_t DEVICE_API_VERSION_MINI_LEN = 5;
+const int32_t STRTOL_DECIMALISM_FLAG = 10;
+const char STRING_END_FLAG = '\0';
 
 int32_t GtBundleParser::ParseValue(const cJSON *object, const char *key, int32_t defaultValue)
 {
@@ -207,24 +216,55 @@ uint8_t GtBundleParser::ParseJsonInfo(const cJSON *appObject, const cJSON *confi
         return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_VERSIONCODE_ERROR;
     }
     // check apiVersion
-    if (cJSON_HasObjectItem(appObject, PROFILE_KEY_APIVERSION)) {
-        object = ParseValue(appObject, PROFILE_KEY_APIVERSION, nullptr);
-        CHECK_NULL(object, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
-        bundleProfile.profileApiVersion.minApiVersion = ParseValue(object, PROFILE_KEY_APIVERSION_COMPATIBLE, -1);
-        if (cJSON_HasObjectItem(object, PROFILE_KEY_APIVERSION_TARGET)) {
-            bundleProfile.profileApiVersion.maxApiVersion = ParseValue(object, PROFILE_KEY_APIVERSION_TARGET, -1);
-            CHECK_IS_TRUE(
-                (bundleProfile.profileApiVersion.maxApiVersion >= bundleProfile.profileApiVersion.minApiVersion),
-                ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
-        }
-    } else {
-        // parse deviceConfig
-        bundleProfile.profileApiVersion.minApiVersion = BASE_API_VERSION;
-        bundleProfile.profileApiVersion.maxApiVersion = BASE_API_VERSION;
-    }
+    uint8_t checkRet = CheckApiVersion(appObject, bundleProfile);
+    CHECK_IS_TRUE((checkRet == ERR_OK), ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
 
     uint8_t errorCode = ParseModuleInfo(moduleObject, bundleProfile, bundleRes);
     return errorCode;
+}
+
+uint8_t GtBundleParser::CheckApiVersion(const cJSON *appObject, BundleProfile &bundleProfile)
+{
+    if (!cJSON_HasObjectItem(appObject, PROFILE_KEY_APIVERSION)) {
+        // parse deviceConfig
+        bundleProfile.profileApiVersion.minApiVersion = BASE_API_VERSION;
+        bundleProfile.profileApiVersion.maxApiVersion = BASE_API_VERSION;
+        return ERR_OK;
+    }
+    cJSON *object = ParseValue(appObject, PROFILE_KEY_APIVERSION, nullptr);
+    CHECK_NULL(object, ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    if (!cJSON_HasObjectItem(object, PROFILE_KEY_APIVERSION_COMPATIBLE) ||
+        !cJSON_HasObjectItem(object, PROFILE_KEY_APIVERSION_TARGET)) {
+        return ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR;
+    }
+    bundleProfile.profileApiVersion.minApiVersion = ParseValue(object, PROFILE_KEY_APIVERSION_COMPATIBLE, -1);
+    bundleProfile.profileApiVersion.maxApiVersion = ParseValue(object, PROFILE_KEY_APIVERSION_TARGET, -1);
+    CHECK_IS_TRUE(
+        (bundleProfile.profileApiVersion.maxApiVersion >= bundleProfile.profileApiVersion.minApiVersion),
+        ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    // API 10
+    if (bundleProfile.profileApiVersion.minApiVersion >= API_VERSION_MASK) {
+        uint8_t checkRet = CheckApi10Version(bundleProfile.profileApiVersion.minApiVersion);
+        CHECK_IS_TRUE((checkRet == ERR_OK), ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    }
+    return ERR_OK;
+}
+
+uint8_t GtBundleParser::CheckApi10Version(int32_t compatibleApiVersion)
+{
+    int32_t apiLevel = GetSdkApiVersion();
+    char value[DEVICE_API_VERSION_LEN] = {0};
+    int32_t ret = GetParameter(DEVICE_API_VERSION_KEY, "", value, DEVICE_API_VERSION_LEN);
+    CHECK_IS_TRUE((ret >= 0), ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    CHECK_IS_TRUE((strlen(value) >= DEVICE_API_VERSION_MINI_LEN),
+        ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    char* endptr;
+    long num = strtol(value, &endptr, STRTOL_DECIMALISM_FLAG);
+    CHECK_IS_TRUE((*endptr == STRING_END_FLAG), ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    int32_t apiVersion = static_cast<int32_t>(num);
+    int32_t deviceVersion = apiVersion * API_VERSION_MASK + apiLevel;
+    CHECK_IS_TRUE((deviceVersion >= compatibleApiVersion), ERR_APPEXECFWK_INSTALL_FAILED_PARSE_API_VERSION_ERROR);
+    return ERR_OK;
 }
 
 uint8_t GtBundleParser::ParseModuleInfo(const cJSON *moduleObject, BundleProfile &bundleProfile, BundleRes &bundleRes)
