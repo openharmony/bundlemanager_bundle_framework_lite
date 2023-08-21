@@ -60,9 +60,6 @@ bool BundleMsClient::Initialize() const
 bool BundleMsClient::Install(const char *hapPath, const InstallParam *installParam,
     InstallerCallback installerCallback) const
 {
-    if (g_bmsbuff == nullptr) {
-        g_bmsbuff = reinterpret_cast<Bmsbuff *>(OhosMalloc(MEM_TYPE_APPFMK_LSRAM, sizeof(Bmsbuff)));
-    }
     BundleMgrService *service = BundleMgrService::GetInstance();
     if (service == nullptr) {
         return false;
@@ -70,22 +67,20 @@ bool BundleMsClient::Install(const char *hapPath, const InstallParam *installPar
     if (hapPath == nullptr) {
         return false;
     }
-
-    if (memset_s(g_bmsbuff->bundleParameter, MAX_PATH_LEN, 0, MAX_PATH_LEN) != 0) {
-        return false;
-    }
     int len = strlen(hapPath);
     if (len >= MAX_PATH_LEN) {
         return false;
     }
-    if (memcpy_s(g_bmsbuff->bundleParameter, MAX_PATH_LEN, hapPath, len + 1) != 0) {
+    Bmsbuff *data = static_cast<Bmsbuff *>(AdapterMalloc(sizeof(Bmsbuff)));
+    if (memcpy_s(data->bundleParameter, MAX_PATH_LEN, hapPath, len + 1) != 0) {
+        AdapterFree(data);
         return false;
     }
-    g_bmsbuff->bundleInstallerCallback = installerCallback;
+    data->bundleInstallerCallback = installerCallback;
     Request request = {
         .msgId = BMS_INSTALL_MSG,
-        .len = 0,
-        .data = nullptr,
+        .len = sizeof(Bmsbuff),
+        .data = data,
         .msgValue = 0,
     };
 
@@ -103,24 +98,20 @@ bool BundleMsClient::Uninstall (const char *bundleName, const InstallParam *inst
     if (bundleName == nullptr) {
         return false;
     }
-    if (g_bmsbuff == nullptr) {
-        g_bmsbuff = reinterpret_cast<Bmsbuff *>(OhosMalloc(MEM_TYPE_APPFMK_LSRAM, sizeof(Bmsbuff)));
-    }
-    if (memset_s(g_bmsbuff->bundleParameter, MAX_PATH_LEN, 0, MAX_PATH_LEN) != 0) {
-        return false;
-    }
     int len = strlen(bundleName);
     if (len >= MAX_PATH_LEN) {
         return false;
     }
-    if (memcpy_s(g_bmsbuff->bundleParameter, MAX_PATH_LEN, bundleName, len + 1) != 0) {
+    Bmsbuff *data = static_cast<Bmsbuff *>(AdapterMalloc(sizeof(Bmsbuff)));
+    if (memcpy_s(data->bundleParameter, MAX_PATH_LEN, bundleName, len + 1) != 0) {
+        AdapterFree(data);
         return false;
     }
-    g_bmsbuff->bundleInstallerCallback = installerCallback;
+    data->bundleInstallerCallback = installerCallback;
     Request request = {
         .msgId = BMS_UNINSTALL_MSG,
-        .len = 0,
-        .data = nullptr,
+        .len = sizeof(Bmsbuff),
+        .data = data,
         .msgValue = 0,
     };
     int32_t ret = SAMGR_SendRequest(service->GetIdentity(), &request, nullptr);
