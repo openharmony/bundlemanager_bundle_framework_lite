@@ -72,6 +72,9 @@ bool BundleMsClient::Install(const char *hapPath, const InstallParam *installPar
         return false;
     }
     Bmsbuff *data = static_cast<Bmsbuff *>(AdapterMalloc(sizeof(Bmsbuff)));
+    if (data == nullptr) {
+        return false;
+    }
     if (memcpy_s(data->bundleParameter, MAX_PATH_LEN, hapPath, len + 1) != 0) {
         AdapterFree(data);
         return false;
@@ -103,6 +106,9 @@ bool BundleMsClient::Uninstall (const char *bundleName, const InstallParam *inst
         return false;
     }
     Bmsbuff *data = static_cast<Bmsbuff *>(AdapterMalloc(sizeof(Bmsbuff)));
+    if (data == nullptr) {
+        return false;
+    }
     if (memcpy_s(data->bundleParameter, MAX_PATH_LEN, bundleName, len + 1) != 0) {
         AdapterFree(data);
         return false;
