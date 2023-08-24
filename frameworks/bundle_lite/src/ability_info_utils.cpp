@@ -207,7 +207,7 @@ bool AbilityInfoUtils::SetAbilityInfoSkill(AbilityInfo *abilityInfo, Skill * con
         if (skills[i] == nullptr) {
             return false;
         }
-        abilityInfo->skills[i] = (Skill *)AdapterMalloc(sizeof(Skill));
+        abilityInfo->skills[i] = static_cast<Skill *>(AdapterMalloc(sizeof(Skill)));
         CopyStringArray(abilityInfo->skills[i]->entities, skills[i]->entities, MAX_SKILL_ITEM);
         CopyStringArray(abilityInfo->skills[i]->actions, skills[i]->actions, MAX_SKILL_ITEM);
     }
