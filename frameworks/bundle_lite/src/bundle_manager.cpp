@@ -793,6 +793,7 @@ uint8_t GetBundleNameForUid(int32_t uid, char **bundleName)
         resultOfGetBundleNameForUid.bundleName, resultOfGetBundleNameForUid.length);
     AdapterFree(resultOfGetBundleNameForUid.bundleName);
     if (err != EOK) {
+        AdapterFree(*bundleName);
         return ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
     }
     return resultOfGetBundleNameForUid.resultCode;
