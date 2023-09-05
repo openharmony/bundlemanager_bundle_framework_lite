@@ -142,7 +142,10 @@ int32_t BundleDaemon::RegisterCallbackInvoke(IpcIo *req)
     if (!(ReadRemoteObject(req, &svcIdentity))) {
         return EC_INVALID;
     }
-    BundleDaemon::GetInstance().bundleMsClient_ = new BundleMsClient(svcIdentity);
+    BundleDaemon::GetInstance().bundleMsClient_ = new (std::nothrow) BundleMsClient(svcIdentity);
+    if (BundleDaemon::GetInstance().bundleMsClient_ == nullptr) {
+        return EC_BADPTR;
+    }
     return BundleDaemon::GetInstance().bundleMsClient_->SendReply(EC_SUCCESS);
 }
 

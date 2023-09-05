@@ -47,8 +47,8 @@ const uint8_t BMS_INSTALLATION_COMPLETED = 100;
 
 GtManagerService::GtManagerService()
 {
-    installer_ = new GtBundleInstaller();
-    bundleResList_ = new List<BundleRes *>();
+    installer_ = new (std::nothrow) GtBundleInstaller();
+    bundleResList_ = new (std::nothrow) List<BundleRes *>();
     bundleMap_ = BundleMap::GetInstance();
     bundleInstallMsg_ = nullptr;
     jsEngineVer_ = nullptr;
@@ -56,7 +56,7 @@ GtManagerService::GtManagerService()
     preAppList_ = nullptr;
     updateFlag_ = false;
     oldVersionCode_ = -1;
-    listenList_ = new List<InstallerCallback>();
+    listenList_ = new (std::nothrow) List<InstallerCallback>();
 }
 
 GtManagerService::~GtManagerService()
@@ -73,7 +73,7 @@ bool GtManagerService::Install(const char *hapPath, const InstallParam *installP
     InstallerCallback installerCallback)
 {
     if (installer_ == nullptr) {
-        installer_ = new GtBundleInstaller();
+        installer_ = new (std::nothrow) GtBundleInstaller();
     }
     if (hapPath == nullptr) {
         return false;
@@ -170,7 +170,7 @@ bool GtManagerService::Uninstall(const char *bundleName, const InstallParam *ins
     InstallerCallback installerCallback)
 {
     if (installer_ == nullptr) {
-        installer_ = new GtBundleInstaller();
+        installer_ = new (std::nothrow) GtBundleInstaller();
     }
     if (bundleName == nullptr) {
         HILOG_ERROR(HILOG_MODULE_AAFWK, "[BMS] Parsed bundleName to be uninstalled is null");
@@ -298,7 +298,7 @@ uint8_t GtManagerService::QueryAbilityInfos(const Want *want, AbilityInfo **abil
         return 0;
     }
     int32_t abilityInfoLen = 0;
-    List<BundleInfo *> *bundleInfos_ = new List<BundleInfo *>();
+    List<BundleInfo *> *bundleInfos_ = new (std::nothrow) List<BundleInfo *>();
     bundleMap_->GetBundleInfosInner(*bundleInfos_);
 
     for (auto node = bundleInfos_->Begin(); node != bundleInfos_->End(); node = node->next_) {
@@ -1197,7 +1197,6 @@ int32_t GtManagerService::ReportInstallCallback(
     bundleInstallMsg->smallIconPath = bundleInstallMsg_->smallIconPath;
     bundleInstallMsg->bigIconPath = bundleInstallMsg_->bigIconPath;
     (*installerCallback)(errCode, bundleInstallMsg);
-    AdapterFree(bundleInstallMsg);
     return 0;
 }
 
@@ -1215,7 +1214,6 @@ int32_t GtManagerService::ReportUninstallCallback(uint8_t errCode, uint8_t insta
     bundleInstallMsg->bundleName = bundleName;
     bundleInstallMsg->installProcess = process;
     (*installerCallback)(errCode, bundleInstallMsg);
-    AdapterFree(bundleInstallMsg);
     return 0;
 }
 

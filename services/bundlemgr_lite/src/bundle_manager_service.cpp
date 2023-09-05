@@ -49,7 +49,7 @@ extern "C" {
 namespace OHOS {
 ManagerService::ManagerService()
 {
-    installer_ = new BundleInstaller(INSTALL_PATH, DATA_PATH);
+    installer_ = new (std::nothrow) BundleInstaller(INSTALL_PATH, DATA_PATH);
     bundleMap_ = BundleMap::GetInstance();
 }
 
@@ -182,7 +182,7 @@ void ManagerService::ServiceMsgProcess(Request* request)
     }
 
     if (installer_ == nullptr) {
-        installer_ = new BundleInstaller(INSTALL_PATH, DATA_PATH);
+        installer_ = new (std::nothrow) BundleInstaller(INSTALL_PATH, DATA_PATH);
     }
 
     switch (request->msgId) {
