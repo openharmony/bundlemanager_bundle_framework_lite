@@ -48,12 +48,16 @@ uint8_t BundleInfoCreator::SaveBundleInfo(const BundleProfile &bundleProfile, Bu
         size_t index = std::string(info->codePath).find_last_of(PATH_SEPARATOR);
         if (index == std::string::npos) {
             HILOG_ERROR(HILOG_MODULE_APP, "codePath is invalid!");
+            BundleInfoUtils::FreeBundleInfo(*bundleInfo);
+            *bundleInfo = nullptr;
             return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
         }
         installDirPath = std::string(info->codePath).substr(0, index);
         index = std::string(info->dataPath).find_last_of(PATH_SEPARATOR);
         if (index == std::string::npos) {
             HILOG_ERROR(HILOG_MODULE_APP, "dataPath is invalid!");
+            BundleInfoUtils::FreeBundleInfo(*bundleInfo);
+            *bundleInfo = nullptr;
             return ERR_APPEXECFWK_INSTALL_FAILED_INTERNAL_ERROR;
         }
         dataDirPath = std::string(info->dataPath).substr(0, index);

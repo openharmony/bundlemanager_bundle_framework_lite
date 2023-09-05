@@ -15,8 +15,8 @@
 
 #include "gt_bundle_parser.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "ability_info_utils.h"
 #include "adapter.h"

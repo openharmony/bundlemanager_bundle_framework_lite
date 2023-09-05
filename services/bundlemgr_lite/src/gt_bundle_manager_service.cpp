@@ -350,8 +350,8 @@ bool GtManagerService::MatchSkills(const Want *want, Skill *const skills[])
 }
 bool GtManagerService::isMatchActions(const char *actions, char *const skillActions[])
 {
-    if (actions == nullptr && skillActions == nullptr) {
-        return true;
+    if (actions == nullptr || skillActions == nullptr) {
+        return false;
     }
     for (int32_t i = 0; i < MAX_SKILL_ITEM; i++) {
         if (skillActions[i] == nullptr) {
@@ -953,6 +953,9 @@ void GtManagerService::TransformJsToBcWhenRestart(const char *codePath, const ch
     }
 
     cJSON *oldJsEngineVerObj = cJSON_GetObjectItem(installRecordJson, JSON_SUB_KEY_JSENGINE_VERSION);
+    if (oldJsEngineVerObj == nullptr) {
+        return;
+    }
     if (cJSON_IsString(oldJsEngineVerObj) && strcmp(oldJsEngineVerObj->valuestring, jsEngineVer_) == 0) {
         cJSON_Delete(jsEngineVerObj);
         cJSON *transformResultObj = cJSON_GetObjectItem(installRecordJson, JSON_SUB_KEY_TRANSFORM_RESULT);
