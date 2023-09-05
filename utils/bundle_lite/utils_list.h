@@ -16,6 +16,8 @@
 #ifndef OHOS_UTILS_LIST_H
 #define OHOS_UTILS_LIST_H
 
+#include <new>
+
 namespace OHOS {
 template<class T>
 struct Node {
@@ -32,7 +34,7 @@ class List {
 public:
     List() : count_(0)
     {
-        head_ = new Node<T>();
+        head_ = new (std::nothrow) Node<T>();
         head_->next_ = head_;
         head_->prev_ = head_;
     }
@@ -55,7 +57,7 @@ public:
 
     void PushFront(T value)
     {
-        auto node = new Node<T>(value);
+        auto node = new (std::nothrow) Node<T>(value);
         if (node == nullptr) {
             return;
         }
@@ -91,7 +93,7 @@ public:
 
     void PushBack(T value)
     {
-        auto node = new Node<T>(value);
+        auto node = new (std::nothrow) Node<T>(value);
 
         node->next_ = head_;
         node->prev_ = head_->prev_;

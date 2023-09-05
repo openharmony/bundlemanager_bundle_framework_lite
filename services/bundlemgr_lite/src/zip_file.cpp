@@ -437,13 +437,13 @@ bool ZipFile::InitZStream(z_stream &zstream) const
         return false;
     }
 
-    BytePtr bufOut = new Byte[UNZIP_BUF_OUT_LEN];
+    BytePtr bufOut = new (std::nothrow) Byte[UNZIP_BUF_OUT_LEN];
     if (bufOut == nullptr) {
         HILOG_ERROR(HILOG_MODULE_APP, "unzip inflated new out buffer failed");
         return false;
     }
 
-    BytePtr bufIn = new Byte[UNZIP_BUF_IN_LEN];
+    BytePtr bufIn = new (std::nothrow) Byte[UNZIP_BUF_IN_LEN];
     if (bufIn == nullptr) {
         HILOG_ERROR(HILOG_MODULE_APP, "unzip inflated new in buffer failed");
         delete[] bufOut;

@@ -41,7 +41,7 @@ BundleMap::BundleMap()
 #else
     g_bundleListMutex = osMutexNew(reinterpret_cast<osMutexAttr_t *>(NULL));
 #endif
-    bundleInfos_ = new List<BundleInfo *>();
+    bundleInfos_ = new (std::nothrow) List<BundleInfo *>();
 }
 
 BundleMap::~BundleMap()
@@ -83,7 +83,7 @@ bool BundleMap::Update(BundleInfo *bundleInfo)
 #else
     MutexAcquire(&g_bundleListMutex, BUNDLELIST_MUTEX_TIMEOUT);
 #endif
-    auto newNode = new Node<BundleInfo *>(bundleInfo);
+    auto newNode = new (std::nothrow) Node<BundleInfo *>(bundleInfo);
     if (newNode == nullptr) {
         MutexRelease(&g_bundleListMutex);
         return false;
