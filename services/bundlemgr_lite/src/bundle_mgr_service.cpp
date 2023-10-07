@@ -24,7 +24,7 @@
 #include "samgr_lite.h"
 
 namespace OHOS {
-const int STACK_SIZE = 0x1C00;
+const int STACK_SIZE = 0x1A00;
 const int QUEUE_SIZE = 20;
 extern Bmsbuff *g_bmsbuff;
 
