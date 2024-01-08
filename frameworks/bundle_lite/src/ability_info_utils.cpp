@@ -217,7 +217,7 @@ bool AbilityInfoUtils::SetAbilityInfoSkill(AbilityInfo *abilityInfo, Skill * con
 void AbilityInfoUtils::ClearExtendedInfo(AbilityInfo *abilityInfo)
 {
     for (int i = 0; i < METADATA_SIZE; i++) {
-        if(abilityInfo->metaData[i] == nullptr) {
+        if (abilityInfo->metaData[i] == nullptr) {
             continue;
         }
         AdapterFree(abilityInfo->metaData[i]->name);
@@ -226,7 +226,7 @@ void AbilityInfoUtils::ClearExtendedInfo(AbilityInfo *abilityInfo)
         AdapterFree(abilityInfo->metaData[i]);
     }
     for (int i = 0; i < SKILL_SIZE; i++) {
-        if(abilityInfo->skills[i] == nullptr) {
+        if (abilityInfo->skills[i] == nullptr) {
             continue;
         }
         ClearStringArray(abilityInfo->skills[i]->entities, MAX_SKILL_ITEM);
