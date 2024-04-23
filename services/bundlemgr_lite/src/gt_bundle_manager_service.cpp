@@ -954,6 +954,9 @@ void GtManagerService::TransformJsToBcWhenRestart(const char *codePath, const ch
 
     cJSON *oldJsEngineVerObj = cJSON_GetObjectItem(installRecordJson, JSON_SUB_KEY_JSENGINE_VERSION);
     if (oldJsEngineVerObj == nullptr) {
+        cJSON_Delete(jsEngineVerObj);
+        cJSON_Delete(installRecordJson);
+        AdapterFree(bundleJsonPath);
         return;
     }
     if (cJSON_IsString(oldJsEngineVerObj) && strcmp(oldJsEngineVerObj->valuestring, jsEngineVer_) == 0) {
