@@ -24,7 +24,8 @@ startup_path = "//base/startup"
 utils_lite_path = "//commonlibrary/utils_lite"
 
 declare_args() {
-  enable_ohos_bundle_manager_service = false
-  enable_ohos_bundle_manager_service_permission = false
-  enable_ohos_bundle_manager_service_parse_metadata = false
+  bundle_framework_lite_enable_ohos_bundle_manager_service = false
+  bundle_framework_lite_enable_ohos_bundle_manager_service_permission = false
+  bundle_framework_lite_enable_ohos_bundle_manager_service_parse_metadata =
+      false
 }
