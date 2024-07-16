@@ -39,7 +39,11 @@ if (ohos_kernel_type == "liteos_m") {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (bundle_framework_lite_enable_ohos_bundle_manager_service_permission == true) {
+=======
+    if (bundle_framework_lite_bundle_framework_lite_enable_ohos_bundle_manager_service_permission == true) {
+>>>>>>> e679bc0515b8a5eeb2a8c69238a5f006b15efd5f
 =======
     if (bundle_framework_lite_bundle_framework_lite_enable_ohos_bundle_manager_service_permission == true) {
 >>>>>>> e679bc0515b8a5eeb2a8c69238a5f006b15efd5f
