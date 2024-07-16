@@ -38,7 +38,8 @@ if (ohos_kernel_type == "liteos_m") {
       defines += [ "_MINI_BMS_" ]
     }
 
-    if (bundle_framework_lite_enable_ohos_bundle_manager_service_permission == true) {
+    if (bundle_framework_lite_enable_ohos_bundle_manager_service_permission ==
+        true) {
       defines += [
         "_MINI_BMS_PERMISSION_",
         "BC_TRANS_ENABLE",
