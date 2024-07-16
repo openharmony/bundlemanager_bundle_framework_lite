@@ -14,6 +14,11 @@
     "component": {
         "name": "bundle_framework_lite",
         "subsystem": "bundlemanager",
+        "features": [
+            "bundle_framework_lite_enable_ohos_bundle_manager_service_permission",
+            "bundle_framework_lite_enable_ohos_bundle_manager_service",
+            "bundle_framework_lite_enable_ohos_bundle_manager_service_parse_metadata"
+        ],
         "adapted_system_type": [
             "mini",
             "small"
