@@ -50,6 +50,9 @@ namespace OHOS {
 ManagerService::ManagerService()
 {
     installer_ = new (std::nothrow) BundleInstaller(INSTALL_PATH, DATA_PATH);
+    if (installer_ == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleMS BundleInstaller is nullptr");
+    }
     bundleMap_ = BundleMap::GetInstance();
 }
 
@@ -183,6 +186,10 @@ void ManagerService::ServiceMsgProcess(Request* request)
 
     if (installer_ == nullptr) {
         installer_ = new (std::nothrow) BundleInstaller(INSTALL_PATH, DATA_PATH);
+        if (installer_ == nullptr) {
+            HILOG_ERROR(HILOG_MODULE_APP, "BundleMS BundleInstaller is nullptr");
+            return;
+        }
     }
 
     switch (request->msgId) {
