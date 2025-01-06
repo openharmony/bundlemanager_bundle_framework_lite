@@ -35,6 +35,9 @@ public:
     List() : count_(0)
     {
         head_ = new (std::nothrow) Node<T>();
+        if (head_ == nullptr) {
+            return;
+        }
         head_->next_ = head_;
         head_->prev_ = head_;
     }
@@ -94,6 +97,9 @@ public:
     void PushBack(T value)
     {
         auto node = new (std::nothrow) Node<T>(value);
+        if (node == nullptr) {
+            return;
+        }
 
         node->next_ = head_;
         node->prev_ = head_->prev_;
