@@ -682,15 +682,15 @@ uint8_t GetBundleInfos(const int flags, BundleInfo **bundleInfos, int32_t *len)
     char data[MAX_IO_SIZE];
     IpcIoInit(&ipcIo, data, MAX_IO_SIZE, 0);
 #ifdef __LINUX__
-    WriteInt32(&ipcIo, flags);
-    return ObtainInnerBundleInfos(flags, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
-#else
     WriteInt32(&ipcIo, GET_BUNDLE_INFOS);
     WriteInt32(&ipcIo, flags);
     BasicInfo basicInfo;
     basicInfo.flags = flags;
     basicInfo.metaDataKey = nullptr;
     return ObtainBundleInfos(basicInfo, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
+#else
+    WriteInt32(&ipcIo, flags);
+    return ObtainInnerBundleInfos(flags, bundleInfos, len, GET_BUNDLE_INFOS, &ipcIo);
 #endif
 }
 
@@ -735,7 +735,15 @@ uint8_t QueryKeepAliveBundleInfos(BundleInfo **bundleInfos, int32_t *len)
     IpcIo ipcIo;
     char data[MAX_IO_SIZE];
     IpcIoInit(&ipcIo, data, MAX_IO_SIZE, 0);
+#ifdef __LINUX__
+    WriteInt32(&ipcIo, QUERY_KEEPALIVE_BUNDLE_INFOS);
+    BasicInfo basicInfo;
+    basicInfo.flags = 0;
+    basicInfo.metaDataKey = nullptr;
+    return ObtainBundleInfos(basicInfo, bundleInfos, len, QUERY_KEEPALIVE_BUNDLE_INFOS, &ipcIo);
+#else
     return ObtainInnerBundleInfos(0, bundleInfos, len, QUERY_KEEPALIVE_BUNDLE_INFOS, &ipcIo);
+#endif
 }
 
 uint8_t GetBundleInfosByMetaData(const char *metaDataKey, BundleInfo **bundleInfos, int32_t *len)
@@ -746,8 +754,17 @@ uint8_t GetBundleInfosByMetaData(const char *metaDataKey, BundleInfo **bundleInf
     IpcIo ipcIo;
     char data[MAX_IO_SIZE];
     IpcIoInit(&ipcIo, data, MAX_IO_SIZE, 0);
+#ifdef __LINUX__
+    WriteInt32(&ipcIo, GET_BUNDLE_INFOS_BY_METADATA);
+    WriteString(&ipcIo, metaDataKey);
+    BasicInfo basicInfo;
+    basicInfo.flags = 0;
+    basicInfo.metaDataKey = const_cast<char *>(metaDataKey);
+    return ObtainBundleInfos(basicInfo, bundleInfos, len, GET_BUNDLE_INFOS_BY_METADATA, &ipcIo);
+#else
     WriteString(&ipcIo, metaDataKey);
     return ObtainInnerBundleInfos(0, bundleInfos, len, GET_BUNDLE_INFOS_BY_METADATA, &ipcIo);
+#endif
 }
 
 uint8_t GetBundleNameForUid(int32_t uid, char **bundleName)
