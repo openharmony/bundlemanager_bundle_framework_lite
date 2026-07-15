@@ -64,7 +64,7 @@ private:
     static uint8_t GetInnerBundleSize(const uint8_t funcId, IpcIo *req, IpcIo *reply);
     static uint8_t HandleGetBundleInfosByIndex(const uint8_t funcId, IpcIo *req, IpcIo *reply);
     static uint8_t HandleGetBundleInfosLength(const uint8_t funcId, IpcIo *req, IpcIo *reply);
-    static BundleInfo *GetInnerBundleInfos(IpcIo *req, IpcIo *reply, int32_t *length);
+    static BundleInfo *GetInnerBundleInfos(IpcIo *req, IpcIo *reply, int32_t *length, uint8_t *outErrorCode = nullptr);
 
     Identity identity_;
     static BundleInvokeType BundleMsInvokeFuc[BMS_INNER_BEGIN];

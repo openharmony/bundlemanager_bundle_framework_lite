@@ -558,10 +558,13 @@ uint8_t BundleMsFeature::GetBundleNameForUid(int32_t uid, char **bundleName)
     return OHOS_SUCCESS;
 }
 
-BundleInfo *BundleMsFeature::GetInnerBundleInfos(IpcIo *req, IpcIo *reply, int32_t *length)
+BundleInfo *BundleMsFeature::GetInnerBundleInfos(IpcIo *req, IpcIo *reply, int32_t *length, uint8_t *outErrorCode)
 {
     HILOG_INFO(HILOG_MODULE_APP, "BundleMS GetInnerBundleInfos start");
     if ((req == nullptr) || (reply == nullptr)) {
+        if (outErrorCode != nullptr) {
+            *outErrorCode = ERR_APPEXECFWK_OBJECT_NULL;
+        }
         return nullptr;
     }
     BundleInfo *bundleInfos = nullptr;
@@ -578,15 +581,24 @@ BundleInfo *BundleMsFeature::GetInnerBundleInfos(IpcIo *req, IpcIo *reply, int32
         size_t len = 0;
         char *metaDataKey = reinterpret_cast<char *>(ReadString(req, &len));
         if (metaDataKey == nullptr) {
+            if (outErrorCode != nullptr) {
+                *outErrorCode = ERR_APPEXECFWK_DESERIALIZATION_FAILED;
+            }
             return nullptr;
         }
         errorCode = GetBundleInfosByMetaData(metaDataKey, &bundleInfos, length);
     } else {
+        if (outErrorCode != nullptr) {
+            *outErrorCode = ERR_APPEXECFWK_COMMAND_ERROR;
+        }
         return nullptr;
     }
     if (errorCode != OHOS_SUCCESS) {
         HILOG_ERROR(HILOG_MODULE_APP, "BundleMS GetInnerBundleInfos failed with errorcode: %{public}d\n", errorCode);
         BundleInfoUtils::FreeBundleInfos(bundleInfos, *length);
+        if (outErrorCode != nullptr) {
+            *outErrorCode = errorCode;
+        }
         return nullptr;
     }
     HILOG_DEBUG(HILOG_MODULE_APP, "BundleMS GetInnerBundleInfos with length is: %{public}d\n", *length);
@@ -600,10 +612,12 @@ uint8_t BundleMsFeature::HandleGetBundleInfosLength(const uint8_t funcId, IpcIo 
         return ERR_APPEXECFWK_OBJECT_NULL;
     }
     int32_t lengthOfBundleInfo = 0;
-    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo);
+    uint8_t errorCode = OHOS_SUCCESS;
+    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo, &errorCode);
     if (bundleInfos == nullptr) {
-        HILOG_ERROR(HILOG_MODULE_APP, "BundleMS bundleInfos is nullptr");
-        return ERR_APPEXECFWK_OBJECT_NULL;
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleMS bundleInfos is nullptr, errorCode: %{public}d", errorCode);
+        WriteUint8(reply, errorCode);
+        return errorCode;
     }
     WriteUint8(reply, static_cast<uint8_t>(OHOS_SUCCESS));
     WriteInt32(reply, lengthOfBundleInfo);
@@ -619,9 +633,20 @@ uint8_t BundleMsFeature::HandleGetBundleInfosByIndex(const uint8_t funcId, IpcIo
         return ERR_APPEXECFWK_OBJECT_NULL;
     }
     int32_t lengthOfBundleInfo = 0;
-    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo);
+    uint8_t errorCode = OHOS_SUCCESS;
+    BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo, &errorCode);
     int32_t index = 0;
     ReadInt32(req, &index);
+    if (bundleInfos == nullptr) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleMS HandleGetBundleInfosByIndex bundleInfos is nullptr");
+        return errorCode;
+    }
+    if (index < 0 || index >= lengthOfBundleInfo) {
+        HILOG_ERROR(HILOG_MODULE_APP, "BundleMS index out of range: %{public}d, length: %{public}d",
+            index, lengthOfBundleInfo);
+        BundleInfoUtils::FreeBundleInfos(bundleInfos, lengthOfBundleInfo);
+        return ERR_APPEXECFWK_COMMAND_ERROR;
+    }
     HILOG_INFO(HILOG_MODULE_APP, "BundleMS index is : %{public}d\n", index);
     char *str = ConvertUtils::ConvertBundleInfoToString(bundleInfos + index);
     if (str == nullptr) {
