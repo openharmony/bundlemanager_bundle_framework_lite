@@ -612,7 +612,7 @@ uint8_t BundleMsFeature::HandleGetBundleInfosLength(const uint8_t funcId, IpcIo 
         return ERR_APPEXECFWK_OBJECT_NULL;
     }
     int32_t lengthOfBundleInfo = 0;
-    uint8_t errorCode = OHOS_SUCCESS;
+    uint8_t errorCode = ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
     BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo, &errorCode);
     if (bundleInfos == nullptr) {
         HILOG_ERROR(HILOG_MODULE_APP, "BundleMS bundleInfos is nullptr, errorCode: %{public}d", errorCode);
@@ -633,7 +633,7 @@ uint8_t BundleMsFeature::HandleGetBundleInfosByIndex(const uint8_t funcId, IpcIo
         return ERR_APPEXECFWK_OBJECT_NULL;
     }
     int32_t lengthOfBundleInfo = 0;
-    uint8_t errorCode = OHOS_SUCCESS;
+    uint8_t errorCode = ERR_APPEXECFWK_SYSTEM_INTERNAL_ERROR;
     BundleInfo *bundleInfos = GetInnerBundleInfos(req, reply, &lengthOfBundleInfo, &errorCode);
     int32_t index = 0;
     ReadInt32(req, &index);
