@@ -51,10 +51,10 @@ typedef struct DlListNode {
     struct DlListNode *next;
 } DlListNode;
 
-#define DL_LIST_ENTRY(ptr, type, member) \
+#define DL_LIST_ENTRY(ptr, type, member)/* NOLINT(G.PRE.02-CPP)*/ \
     ((type *)(((char *)(ptr)) - offsetof(type, member)))
 
-#define DL_LIST_FOR_EACH_ENTRY_SAFE(item, nextItem, listHead, type, member)      \
+#define DL_LIST_FOR_EACH_ENTRY_SAFE(item, nextItem, listHead, type, member)/* NOLINT(G.PRE.02-CPP)*/ \
     for ((item) = DL_LIST_ENTRY((listHead)->next, type, member);                 \
          &((item)->member) != (listHead);                                        \
          (item) = (nextItem), (nextItem) = DL_LIST_ENTRY((item)->member.next, type, member))
