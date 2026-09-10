@@ -31,7 +31,6 @@
 #include "gt_bundle_parser.h"
 #include "gt_extractor_util.h"
 #include "jerryscript_adapter.h"
-#include "los_tick.h"
 #include "sys/stat.h"
 #include "unistd.h"
 #include "utils.h"
@@ -44,6 +43,37 @@ const uint8_t OPERATION_DOING = 200;
 const uint8_t BMS_INSTALLATION_START = 101;
 const uint8_t BMS_UNINSTALLATION_START = 104;
 const uint8_t BMS_INSTALLATION_COMPLETED = 100;
+
+// #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
+
+void DlListInit(DlListNode *head)
+{
+    head->next = head;
+    head->prev = head;
+}
+
+void DlListTailInsert(DlListNode *head, DlListNode *node)
+{
+    node->next = head;
+    node->prev = head->prev;
+    head->prev->next = node;
+    head->prev = node;
+}
+
+void DlListDelete(DlListNode *node)
+{
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    node->next = nullptr;
+    node->prev = nullptr;
+}
+
+int DlListEmpty(const DlListNode *head)
+{
+    return (head->next == head) ? 1 : 0;
+}
+
+// #endif
 
 GtManagerService::GtManagerService()
 {
@@ -478,7 +508,7 @@ void GtManagerService::InstallAllSystemBundle(InstallerCallback installerCallbac
 
     PreAppList *currentNode = nullptr;
     PreAppList *nextNode = nullptr;
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+    DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
         if (currentNode == nullptr) {
             return;
         }
@@ -571,7 +601,7 @@ void GtManagerService::ScanSystemApp(const cJSON *uninstallRecord, List<ToBeInst
     PreAppList *currentNode = nullptr;
     PreAppList *nextNode = nullptr;
 
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+    DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
         if (currentNode == nullptr) {
             return;
         }
@@ -1232,7 +1262,7 @@ PreAppList *GtManagerService::InitPreAppInfo()
         return nullptr;
     }
 
-    LOS_ListInit(&list->appDoubleList);
+    DlListInit(&list->appDoubleList);
     return list;
 }
 
@@ -1309,7 +1339,7 @@ void GtManagerService::InsertPreAppInfo(const char *filePath, PreAppList *list)
         return;
     }
 
-    LOS_ListTailInsert(&list->appDoubleList, &app->appDoubleList);
+    DlListTailInsert(&list->appDoubleList, &app->appDoubleList);
     return;
 }
 
@@ -1330,9 +1360,9 @@ void GtManagerService::FreePreAppInfo(const PreAppList *list)
 
     PreAppList *currentNode = nullptr;
     PreAppList *nextNode = nullptr;
-    LOS_DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
+    DL_LIST_FOR_EACH_ENTRY_SAFE(currentNode, nextNode, &list->appDoubleList, PreAppList, appDoubleList) {
         if (currentNode != nullptr) {
-            LOS_ListDelete(&(currentNode->appDoubleList));
+            DlListDelete(&(currentNode->appDoubleList));
             AdapterFree(currentNode);
             currentNode = nullptr;
         }

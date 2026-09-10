@@ -17,9 +17,8 @@
 #define OHOS_BUNDLE_INSTALL_MSG_H
 
 #include <stdint.h>
-
+#include <stddef.h>
 #include "bundle_manager.h"
-#include "los_list.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -47,8 +46,21 @@ typedef struct {
     uint8_t actionService;
 } BundleInstallMsg;
 
+typedef struct DlListNode {
+    struct DlListNode *prev;
+    struct DlListNode *next;
+} DlListNode;
+
+#define DL_LIST_ENTRY(ptr, type, member)/* NOLINT(G.PRE.02-CPP)*/ \
+    ((type *)(((char *)(ptr)) - offsetof(type, member)))
+
+#define DL_LIST_FOR_EACH_ENTRY_SAFE(item, nextItem, listHead, type, member)/* NOLINT(G.PRE.02-CPP)*/ \
+    for ((item) = DL_LIST_ENTRY((listHead)->next, type, member);                 \
+         &((item)->member) != (listHead);                                        \
+         (item) = (nextItem), (nextItem) = DL_LIST_ENTRY((item)->member.next, type, member))
+         
 typedef struct {
-    LOS_DL_LIST appDoubleList;
+    DlListNode appDoubleList;
     char filePath[MAX_APP_FILE_PATH_LEN];
 } PreAppList;
 

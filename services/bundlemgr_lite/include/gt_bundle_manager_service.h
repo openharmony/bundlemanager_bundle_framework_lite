@@ -43,6 +43,10 @@ typedef enum {
     BUNDLE_UPDATE,
 } BundleState;
 
+void DlListInit(DlListNode *head);
+void DlListTailInsert(DlListNode *head, DlListNode *node);
+void DlListDelete(DlListNode *node);
+int DlListEmpty(const DlListNode *head);
 void RegisterListenCallbackFunc(const uint8_t resultCode, const void *resultMessage);
 class GtManagerService {
 public:

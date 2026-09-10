@@ -32,7 +32,7 @@
 #include "cstdio"
 #include "dirent.h"
 #include "fcntl.h"
-#include "los_tick.h"
+#include "cmsis_os2.h"
 #include "sys/stat.h"
 #include "unistd.h"
 #endif
@@ -623,7 +623,7 @@ void BundleUtil::CreateRandStr(char *str, uint32_t len)
 #ifdef OHOS_APPEXECFWK_BMS_BUNDLEMANAGER
     srand(time(NULL));
 #else
-    srand(LOS_TickCountGet());
+    srand(osKernelGetTickCount());
 #endif
     uint32_t i;
     for (i = 0; i < len - 1; ++i) {
