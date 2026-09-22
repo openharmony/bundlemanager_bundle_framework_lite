@@ -55,9 +55,10 @@ typedef struct DlListNode {
     ((type *)(((char *)(ptr)) - offsetof(type, member)))
 
 #define DL_LIST_FOR_EACH_ENTRY_SAFE(item, nextItem, listHead, type, member)/* NOLINT(G.PRE.02-CPP)*/ \
-    for ((item) = DL_LIST_ENTRY((listHead)->next, type, member);                 \
-         &((item)->member) != (listHead);                                        \
-         (item) = (nextItem), (nextItem) = DL_LIST_ENTRY((item)->member.next, type, member))
+    for ((item) = DL_LIST_ENTRY((listHead)->next, type, member);                \
+        (nextItem) = DL_LIST_ENTRY((item)->member.next, type, member);          \
+        &((item)->member) != (listHead);                                        \
+        (item) = (nextItem), (nextItem) = DL_LIST_ENTRY((item)->member.next, type, member))
          
 typedef struct {
     DlListNode appDoubleList;
